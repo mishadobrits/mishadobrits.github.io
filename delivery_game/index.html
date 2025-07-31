@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squirrel nut Pusher</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Kalam', cursive;
+            background-color: #d9b38c;
+            /* background-image: 
+                linear-gradient(45deg, #d9b38c 25%, transparent 25%),
+                linear-gradient(-45deg, #d9b38c 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #d9b38c 75%),
+                linear-gradient(-45deg, transparent 75%, #d9b38c 75%); */
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #4a2c17;
+        }
+        
+        .game-container {
+            background-color: #e6c9a8;
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 3px solid #8b5a2b;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b5a2b' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .game-title {
+            font-size: 2.5em;
+            margin-top: 2px;
+            margin-bottom: 10px;
+            color: #5a3d2b;
+            text-shadow: 2px 2px 0 #d9b38c;
+            letter-spacing: 1px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            background-color: rgba(139, 90, 43, 0.1);
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(139, 90, 43, 0.3);
+        }
+        
+        .level-selector {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            font-weight: bold;
+            color: #5a3d2b;
+        }
+        
+        .level-selector:hover {
+            color: #8b5a2b;
+        }
+        
+        .level-dropdown {
+            display: none;
+            position: relative;
+            background-color: #e6c9a8;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border: 2px solid #8b5a2b;
+            z-index: 20;
+            max-height: 300px;
+            overflow-y: auto;
+            top: 100%;
+            left: 0;
+            margin-top: 5px;
+            z-index: 20;
+            text-align: left;
+        }
+        
+        .level-dropdown a {
+            color: #5a3d2b;
+            padding: 10px 15px;
+            text-decoration: none;
+            display: block;
+            font-weight: normal;
+            transition: background-color 0.2s;
+            z-index: 20;
+        }
+        
+        .level-dropdown a:hover {
+            background-color: #d9b38c;
+            border-radius: 6px;
+            z-index: 20;
+        }
+        
+        .level-dropdown a.selected {
+            background-color: #c19a6b;
+            color: white;
+            font-weight: bold;
+            z-index: 20;
+        }
+        
+        .game-board {
+            display: grid;
+            gap: 3px;
+            background-color: #8b5a2b;
+            border: 4px solid #5a3d2b;
+            border-radius: 8px;
+            padding: 8px;
+            margin: 0 auto;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+            justify-content: center;
+            align-items: center;
+            /* Remove the left and right padding that was causing the extension */
+            width: fit-content; /* This will make the container only as wide as needed */
+        }
+        
+        .cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            background-color: #e6c9a8;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.5),
+                0 2px 3px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .cell:hover {
+            background-color: #d9b38c;
+            transform: translateY(-2px);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.5),
+                0 4px 5px rgba(0,0,0,0.3);
+        }
+        
+        .cell.arrow {
+            background: linear-gradient(135deg, #c19a6b, #a67c52);
+            color: #fff;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+            font-weight: bold;
+            border: 1px solid #8b5a2b;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.3),
+                0 3px 5px rgba(0,0,0,0.3);
+        }
+        
+        .cell.arrow:hover {
+            background: linear-gradient(135deg, #d9b38c, #b8956a);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.3),
+                0 5px 8px rgba(0,0,0,0.4);
+        }
+        
+        .cell.arrow::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.6;
+        }
+        
+        .cell.squirrel {
+            background-color: #f0d9b5;
+            animation: bounce 3s infinite alternate;
+        }
+        
+        .cell.nut {
+            background-color: #f0d9b5;
+            animation: wobble 4s infinite;
+        }
+        
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-2.5px); }
+        }
+        
+        @keyframes wobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(2.5deg); }
+            75% { transform: rotate(-2.5deg); }
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            font-family: 'Courier New';
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #8b5a2b, #6b4321);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Kalam', cursive;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 
+                0 4px 0 #5a3d2b,
+                0 5px 8px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+            position: relative;
+            top: 0;
+        }
+        
+        button:hover {
+            background: linear-gradient(to bottom, #a67c52, #8b5a2b);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 0 #5a3d2b,
+                0 7px 10px rgba(0,0,0,0.4);
+        }
+        
+        button:active {
+            top: 2px;
+            box-shadow: 
+                0 2px 0 #5a3d2b,
+                0 3px 5px rgba(0,0,0,0.3);
+        }
+        
+        button:disabled {
+            background: linear-gradient(to bottom, #a0a0a0, #808080);
+            color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: 
+                0 2px 0 #606060,
+                0 3px 5px rgba(0,0,0,0.2);
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            font-size: 1.2em;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .win-message {
+            background: linear-gradient(to bottom, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .lose-message {
+            background: linear-gradient(to bottom, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .instructions {
+            max-width: 600px;
+            background-color: #e6c9a8;
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            padding: 25px;
+            margin-top: 20px;
+            border: 3px solid #8b5a2b;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .instructions::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b5a2b' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .instructions h2 {
+            color: #5a3d2b;
+            margin-top: 0;
+            text-shadow: 1px 1px 0 #d9b38c;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .keyboard-hint {
+            font-size: 0.9em;
+            color: #8b5a2b;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Nut to squirrel delivery</h1>
+            <div class="game-info">
+                <div class="level-info">
+                    <div class="level-selector" id="level-selector">
+                        Level: <span id="current-level">1</span> / <span id="total-levels">5</span>
+                        <div class="level-dropdown" id="level-dropdown"></div>
+                    </div>
+                </div>
+                <!-- <div>Moves: <span id="move-count">0</span></div> -->
+            </div>
+        </div>
+        
+        <div id="game-board" class="game-board"></div>
+        
+        <div class="controls">
+            <button id="prev-level">Previous Level</button>
+            <button id="reset-level">Reset Level</button>
+            <button id="next-level">Next Level</button>
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+    
+    <div class="instructions">
+        <h2>How to Play</h2>
+        <ul>
+            <li>Click on arrow cells to push nutes in the arrow's direction</li>
+            <li>Push the nut (🥔) to the squirrel (🐿) to win the level</li>
+            <li>If you push the nut into a wall or an arrow you lose</li>
+            <li>Use the controls to switch between levels or reset the current level</li>
+            <li>Click on the level indicator or use left/right arrow keys to quickly navigate between levels</li>
+        </ul>
+    </div>
+    <div id="squirrel"></div>
+    <script>
+        // Game constants
+        const SQUIRREL = "🐿️";
+        const NUT = "🥜";
+        
+        // Direction to arrow symbol mapping
+        const directionToSymbol = {
+            "0,0": "■",
+            "0,1": "↑",
+            "1,1": "↗",
+            "1,0": "→",
+            "1,-1": "↘",
+            "0,-1": "↓",
+            "-1,-1": "↙",
+            "-1,0": "←",
+            "-1,1": "↖"
+        };
+        
+        // Game state
+        let currentLevel = 0;
+        let gameBoard = [];
+        let moveCount = 0;
+        let gameActive = true;
+        
+        // Levels data (in a real implementation, this would be loaded from a file)
+        const levels = [
+            // Tutorial 1
+            [
+                [" ", " ", " ", " ", " "],
+                [" ", "→", NUT, " ", " "],
+                [" ", " ", " ", " ", " "]
+            ],
+            // Tutorial 2
+            [
+                [" ", " ", " ", " ", " "],
+                [" ", " ", "↓", " ", " "],
+                [" ", " ", NUT, " ", " "],
+                [" ", "→", " ", " ", " "],
+                [" ", " ", " ", " ", " "]
+            ],
+            // Tutorial 3
+            [
+                [" ", " ", " ", " ", " "],
+                ["→", "↓", " ", " ", " "],
+                [" ", "→", NUT, " ", " "],
+                [" ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " "]
+            ],
+            // Tutorial 4
+            [
+                [" ", " ", " ", " ", " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", "↓", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " ", " ", " "],
+                [" ", "→", "→", NUT, "→", " ", " ", " ", " "],
+                [" ", " ", " ", " ", "↑", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+            ],
+            // Start 1
+            [
+                [" ", " ", "↓", " ", " "],
+                [" ", " ", "↙", " ", " "],
+                [" ", "↓", NUT, " ", " "],
+                [" ", " ", " ", "←", " "],
+                [" ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " "]
+            ],
+            // Start 2
+            [
+                [" ", "↓", "↑", " "],
+                ["→", NUT, " ", "←"],
+                ["↑", " ", " ", "↑"],
+                [" ", " ", " ", " "]
+            ],
+            // Start 4 = 2*2
+            [
+                [" ", " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", "←", "↑"],
+                ["↑", "→", NUT, " ", "↑", "←"],
+                ["→", "↑", " ", " ", " ", " "]
+            ],
+            // Middle 4+1 - rocket
+            [
+                [" ", " ", " ", " "],
+                [" ", "↓", "←", " "],
+                [" ", " ", "↑", "←"],
+                [" ", " ", NUT, "←"],
+                [" ", " ", "↑", " "],
+                [" ", " ", "↑", " "]
+            ],
+            // Middle 6
+            [
+                [" ", " ", " ", "↓", " ", " ", " "],
+                [" ", "→", NUT, "↓", " ", " ", " "],
+                ["→", "→", "↓", "→", " ", " ", " "],
+                [" ", " ", " ", " ", "↑", " ", " "],
+                [" ", " ", " ", " ", " ", " ", "↖"]
+            ],
+            // Middle 7
+            [
+                [" ", " ", " ", " ", " ", " ", " "],
+                ["→", "↓", "→", "↓", " ", " ", " "],
+                [" ", "→", NUT, "↑", "←", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "]
+            ],
+            // Middle 8: far travel
+            [
+                [" ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " "],
+                [" ", " ", NUT, " ", " "],
+                [" ", "→", "↖", " ", " "],
+                ["→", "↑", "↖", " ", " "],
+                [" ", "↗", " ", " ", " "]
+            ],
+            // Middle 9 = 3*3
+            [
+                [" ", " ", " ", " ", " ", " ", " ", " "],
+                [" ", "↓", "→", "↙", " ", " ", " ", " "],
+                [" ", "→", "→", "↓", " ", " ", " ", " "],
+                [" ", "↗", NUT, "↑", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " ", " "]
+            ],
+            // hard 10 = 2*4+2
+            [
+                [" ", " ", " ", " ", " ", " ", " "],
+                [" ", NUT, " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "],
+                [" ", "↘", "↑", "←", "↙", " ", " "],
+                [" ", "↑", "↓", "↑", "↑", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "],
+                [" ", "↑", " ", " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " "]
+            ],
+            // Megaminds only
+            [
+                ["↓", " ", "↓", " ", " ", " ", " ", " "],
+                ["→", "→", "→", "↙", " ", " ", " ", " "],
+                [" ", "↓", "↘", "←", " ", " ", " ", " "],
+                [" ", " ", "↗", "■", " ", " ", " ", " "],
+                [" ", " ", " ", NUT, " ", " ", " ", " "],
+                [" ", " ", " ", " ", " ", " ", " ", " "]
+            ]
+        ];
+        // Place SQUIRREL at the target coordinates (1-based index)
+        levels[0][1][3] = SQUIRREL; // Tutorial 1
+        levels[1][3][3] = SQUIRREL; // Tutorial 2
+        levels[2][3][3] = SQUIRREL; // Tutorial 3
+        levels[3][3][7] = SQUIRREL; // Tutorial 4
+        levels[4][5][0] = SQUIRREL; // Start 1
+        levels[5][2][2] = SQUIRREL; // Start 2
+        levels[6][0][2] = SQUIRREL; // Start 4
+        levels[7][0][1] = SQUIRREL; // Middle 4+1
+        levels[8][4][5] = SQUIRREL; // Middle 6
+        levels[9][3][6] = SQUIRREL; // Middle 7
+        levels[10][0][0] = SQUIRREL; // Middle 8
+        levels[11][3][6] = SQUIRREL; // Middle 9
+        levels[12][0][1] = SQUIRREL; // hard 10
+        levels[13][4][7] = SQUIRREL; // Megaminds only
+        
+        // Level names
+        const levelNames = [
+            "Tutorial 1",
+            "Tutorial 2",
+            "Tutorial 3",
+            "Tutorial 4",
+            "Start 1",
+            "Start 2",
+            "Start 4",
+            "Middle 4+1 - rocket",
+            "Middle 6",
+            "Middle 7",
+            "Middle 8: far travel",
+            "Middle 9 = 3*3",
+            "hard 10 = 2*4+2",
+            "Megaminds only"
+        ];
+        
+        // Cell class
+        class Cell {
+            constructor(symbol) {
+                this.symbol = symbol;
+                this.isEmpty = symbol === " ";
+                this.isTarget = symbol === SQUIRREL;
+                this.isObjectToPush = symbol === NUT;
+                this.isBreakable = symbol === NUT;
+                this.isPusherArrow = Object.values(directionToSymbol).includes(symbol);
+                
+                if (this.isPusherArrow) {
+                    // Find direction for arrow
+                    for (const [dir, sym] of Object.entries(directionToSymbol)) {
+                        if (sym === symbol) {
+                            const [x, y] = dir.split(",").map(Number);
+                            this.pushX = x;
+                            this.pushY = y;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Initialize the game
+        function initGame() {
+            document.getElementById('total-levels').textContent = levels.length;
+            populateLevelDropdown();
+            loadLevel(currentLevel);
+            setupEventListeners();
+        }
+        
+        // Populate the level dropdown
+        function populateLevelDropdown() {
+            const dropdown = document.getElementById('level-dropdown');
+            dropdown.innerHTML = '';
+            
+            for (let i = 0; i < levels.length; i++) {
+                const levelLink = document.createElement('a');
+                levelLink.textContent = `${i + 1}. ${levelNames[i]}`;
+                levelLink.dataset.level = i;
+                
+                if (i === currentLevel) {
+                    levelLink.classList.add('selected');
+                }
+                
+                levelLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const levelIndex = parseInt(e.target.dataset.level);
+                    loadLevel(levelIndex);
+                    toggleLevelDropdown(false);
+                });
+                
+                dropdown.appendChild(levelLink);
+            }
+        }
+        
+        // Toggle level dropdown visibility
+        function toggleLevelDropdown(show) {
+            const dropdown = document.getElementById('level-dropdown');
+            if (show === undefined) {
+                // Toggle if no parameter is provided
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            } else {
+                dropdown.style.display = show ? 'block' : 'none';
+            }
+        }
+        
+        // Load a specific level
+        function loadLevel(levelIndex) {
+            if (levelIndex < 0 || levelIndex >= levels.length) return;
+            
+            currentLevel = levelIndex;
+            gameActive = true;
+            moveCount = 0;
+            updateMoveCount();
+            updateLevelInfo();
+            hideMessage();
+            
+            // Create game board from level data
+            const levelData = levels[levelIndex];
+            gameBoard = [];
+            
+            // Reverse the level data to match the original game's orientation
+            for (let y = levelData.length - 1; y >= 0; y--) {
+                const row = [];
+                for (let x = 0; x < levelData[y].length; x++) {
+                    const symbol = levelData[y][x];
+                    row.push(new Cell(symbol));
+                }
+                gameBoard.push(row);
+            }
+            
+            renderBoard();
+            updateDropdownSelection();
+        }
+        
+        // Update dropdown selection
+        function updateDropdownSelection() {
+            const dropdownLinks = document.querySelectorAll('#level-dropdown a');
+            dropdownLinks.forEach((link, index) => {
+                if (index === currentLevel) {
+                    link.classList.add('selected');
+                } else {
+                    link.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Render the game board
+        function renderBoard() {
+            const boardElement = document.getElementById('game-board');
+            boardElement.innerHTML = '';
+            
+            // Set grid dimensions
+            boardElement.style.gridTemplateColumns = `repeat(${gameBoard[0].length}, 40px)`;
+            
+            // Create cells
+            for (let y = gameBoard.length - 1; y >= 0; y--) {
+                for (let x = 0; x < gameBoard[y].length; x++) {
+                    const cellElement = document.createElement('div');
+                    cellElement.className = 'cell';
+                    cellElement.textContent = gameBoard[y][x].symbol;
+                    cellElement.dataset.x = x;
+                    cellElement.dataset.y = y;
+                    
+                    // Add special classes for different cell types
+                    if (gameBoard[y][x].isPusherArrow) {
+                        cellElement.classList.add('arrow');
+                    } else if (gameBoard[y][x].isTarget) {
+                        cellElement.classList.add('squirrel');
+                    } else if (gameBoard[y][x].isObjectToPush) {
+                        cellElement.classList.add('nut');
+                    }
+                    
+                    // Add click event for pusher arrows
+                    if (gameBoard[y][x].isPusherArrow && gameActive) {
+                        cellElement.addEventListener('click', () => handleMove(x, y));
+                    }
+                    
+                    boardElement.appendChild(cellElement);
+                }
+            }
+        }
+        
+        // Handle a move
+        function handleMove(x, y) {
+            if (!gameActive) return;
+            
+            const cell = gameBoard[y][x];
+            if (!cell.isPusherArrow) return;
+            
+            moveCount++;
+            updateMoveCount();
+            
+            const dx = cell.pushX;
+            const dy = cell.pushY;
+            
+            let insertionCell = new Cell(" ");
+            let xToInsert = x + dx;
+            let yToInsert = y + dy;
+            
+            while (isInBounds(xToInsert, yToInsert)) {
+                const targetCell = gameBoard[yToInsert][xToInsert];
+                console.log("Insertion Cell", insertionCell, " TargetCell", targetCell)
+                // Check win/lose conditions
+                if (targetCell.isTarget) {
+                    if (insertionCell.isObjectToPush) {
+                        endGame(true);
+                        return;
+                    } else {
+                        endGame(false);
+                        return;
+                    }
+                }
+                
+                // Check for collision
+                if (insertionCell.isBreakable && !targetCell.isEmpty) {
+                    endGame(false);
+                    return;
+                }
+                
+                // Swap cells
+                gameBoard[yToInsert][xToInsert] = insertionCell;
+                insertionCell = targetCell;
+                
+                // Stop if we've inserted an empty cell
+                if (insertionCell.isEmpty) break;
+                
+                // Move to next position
+                xToInsert += dx;
+                yToInsert += dy;
+            }
+            
+            renderBoard();
+        }
+        
+        // Check if coordinates are within the game board
+        function isInBounds(x, y) {
+            return y >= 0 && y < gameBoard.length && x >= 0 && x < gameBoard[0].length;
+        }
+        
+        // End the game with win/lose message
+        function endGame(isWin) {
+            gameActive = false;
+            const messageElement = document.getElementById('message');
+            
+            if (isWin) {
+                messageElement.textContent = `You won!`
+                messageElement.className = 'message win-message';
+            } else {
+                messageElement.textContent = 'Game over! Try again.';
+                messageElement.className = 'message lose-message';
+            }
+            
+            messageElement.style.display = 'block';
+        }
+        
+        // Update move count display
+        function updateMoveCount() {
+            // document.getElementById('move-count').textContent = moveCount;
+        }
+        
+        // Update level info display
+        function updateLevelInfo() {
+            document.getElementById('current-level').textContent = currentLevel + 1;
+        }
+        
+        // Hide message
+        function hideMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Level selector click
+            document.getElementById('level-selector').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleLevelDropdown();
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                toggleLevelDropdown(false);
+            });
+            
+            // Prevent dropdown from closing when clicking inside it
+            document.getElementById('level-dropdown').addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            // Button controls
+            document.getElementById('prev-level').addEventListener('click', () => {
+                if (currentLevel > 0) {
+                    loadLevel(currentLevel - 1);
+                }
+            });
+            
+            document.getElementById('next-level').addEventListener('click', () => {
+                if (currentLevel < levels.length - 1) {
+                    loadLevel(currentLevel + 1);
+                }
+            });
+            
+            document.getElementById('reset-level').addEventListener('click', () => {
+                loadLevel(currentLevel);
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' && currentLevel > 0) {
+                    loadLevel(currentLevel - 1);
+                } else if (e.key === 'ArrowRight' && currentLevel < levels.length - 1) {
+                    loadLevel(currentLevel + 1);
+                }
+            });
+        }
+        
+        // Start the game when the page loads
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
