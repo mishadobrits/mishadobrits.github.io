@@ -6,7 +6,6 @@
     <title>Squirrel nut Pusher</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
-        
         body {
             font-family: 'Kalam', cursive;
             background-color: #d9b38c;
@@ -23,7 +22,6 @@
             padding: 20px;
             color: #4a2c17;
         }
-        
         .game-container {
             background-color: #e6c9a8;
             border-radius: 15px;
@@ -36,7 +34,6 @@
             position: relative;
             overflow: hidden;
         }
-        
         .game-container::before {
             content: "";
             position: absolute;
@@ -48,14 +45,12 @@
             opacity: 0.3;
             z-index: 0;
         }
-        
         .game-header {
             text-align: center;
             margin-bottom: 20px;
             position: relative;
             z-index: 1;
         }
-        
         .game-title {
             font-size: 2.5em;
             margin-top: 2px;
@@ -64,7 +59,6 @@
             text-shadow: 2px 2px 0 #d9b38c;
             letter-spacing: 1px;
         }
-        
         .game-info {
             display: flex;
             justify-content: space-between;
@@ -75,7 +69,6 @@
             border-radius: 10px;
             border: 1px solid rgba(139, 90, 43, 0.3);
         }
-        
         .level-selector {
             position: relative;
             display: inline-block;
@@ -83,11 +76,9 @@
             font-weight: bold;
             color: #5a3d2b;
         }
-        
         .level-selector:hover {
             color: #8b5a2b;
         }
-        
         .level-dropdown {
             display: none;
             position: relative;
@@ -105,7 +96,6 @@
             z-index: 20;
             text-align: left;
         }
-        
         .level-dropdown a {
             color: #5a3d2b;
             padding: 10px 15px;
@@ -115,20 +105,17 @@
             transition: background-color 0.2s;
             z-index: 20;
         }
-        
         .level-dropdown a:hover {
             background-color: #d9b38c;
             border-radius: 6px;
             z-index: 20;
         }
-        
         .level-dropdown a.selected {
             background-color: #c19a6b;
             color: white;
             font-weight: bold;
             z-index: 20;
         }
-        
         .game-board {
             display: grid;
             gap: 3px;
@@ -144,8 +131,8 @@
             align-items: center;
             /* Remove the left and right padding that was causing the extension */
             width: fit-content; /* This will make the container only as wide as needed */
+            position: relative; /* Needed for absolute positioning of moving cells */
         }
-        
         .cell {
             width: 40px;
             height: 40px;
@@ -160,17 +147,22 @@
             box-shadow: 
                 inset 0 1px 0 rgba(255,255,255,0.5),
                 0 2px 3px rgba(0,0,0,0.2);
-            position: relative;
+            position: relative; /* Default position */
+            /* Add transition for smooth movement */
+            transition: transform 0.3s ease-in-out;
         }
-        
-        .cell:hover {
+        .cell.moving {
+            /* Use transform for animation instead of changing grid position */
+            z-index: 10;
+            /* The actual transform will be set dynamically */
+        }
+        .cell:hover:not(.animating) { /* Don't show hover during animation */
             background-color: #d9b38c;
             transform: translateY(-2px);
             box-shadow: 
                 inset 0 1px 0 rgba(255,255,255,0.5),
                 0 4px 5px rgba(0,0,0,0.3);
         }
-        
         .cell.arrow {
             background: linear-gradient(135deg, #c19a6b, #a67c52);
             color: #fff;
@@ -181,15 +173,13 @@
                 inset 0 1px 0 rgba(255,255,255,0.3),
                 0 3px 5px rgba(0,0,0,0.3);
         }
-        
-        .cell.arrow:hover {
+        .cell.arrow:hover:not(.animating) { /* Don't show hover during animation */
             background: linear-gradient(135deg, #d9b38c, #b8956a);
             transform: translateY(-3px) scale(1.05);
             box-shadow: 
                 inset 0 1px 0 rgba(255,255,255,0.3),
                 0 5px 8px rgba(0,0,0,0.4);
         }
-        
         .cell.arrow::before {
             content: "";
             position: absolute;
@@ -200,49 +190,31 @@
             background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
             opacity: 0.6;
         }
-        
         .cell.arrow.active {
             animation: arrowPulse 0.5s ease-out;
         }
-        
         @keyframes arrowPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); box-shadow: 0 0 15px rgba(139, 90, 43, 0.8); }
             100% { transform: scale(1); }
         }
-        
         .cell.squirrel {
             background-color: #f0d9b5;
             animation: bounce 3s infinite alternate;
         }
-        
         .cell.nut {
             background-color: #f0d9b5;
-            animation: wobble 4s infinite;
+            /* animation: wobble 4s infinite; */
         }
-        
-        .cell.moving {
-            animation: pushMove 0.3s ease-out;
-            z-index: 10;
-        }
-        
-        @keyframes pushMove {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); box-shadow: 0 0 10px rgba(74, 44, 23, 0.7); }
-            100% { transform: scale(1); }
-        }
-        
         @keyframes bounce {
             0% { transform: translateY(0); }
             100% { transform: translateY(-2.5px); }
         }
-        
         @keyframes wobble {
             0%, 100% { transform: rotate(0deg); }
             25% { transform: rotate(2.5deg); }
             75% { transform: rotate(-2.5deg); }
         }
-        
         .controls {
             display: flex;
             gap: 15px;
@@ -252,7 +224,6 @@
             z-index: 1;
             font-family: 'Courier New';
         }
-        
         button {
             background: linear-gradient(to bottom, #8b5a2b, #6b4321);
             color: white;
@@ -271,7 +242,6 @@
             position: relative;
             top: 0;
         }
-        
         button:hover {
             background: linear-gradient(to bottom, #a67c52, #8b5a2b);
             transform: translateY(-2px);
@@ -279,14 +249,12 @@
                 0 6px 0 #5a3d2b,
                 0 7px 10px rgba(0,0,0,0.4);
         }
-        
         button:active {
             top: 2px;
             box-shadow: 
                 0 2px 0 #5a3d2b,
                 0 3px 5px rgba(0,0,0,0.3);
         }
-        
         button:disabled {
             background: linear-gradient(to bottom, #a0a0a0, #808080);
             color: #cccccc;
@@ -295,7 +263,6 @@
                 0 2px 0 #606060,
                 0 3px 5px rgba(0,0,0,0.2);
         }
-        
         .message {
             margin-top: 20px;
             padding: 15px;
@@ -310,44 +277,36 @@
             opacity: 0;
             transform: translateY(20px);
         }
-        
         .message.show {
             display: block;
             animation: messageAppear 0.5s forwards;
         }
-        
         @keyframes messageAppear {
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-        
         .win-message {
             background: linear-gradient(to bottom, #d4edda, #c3e6cb);
             color: #155724;
             border: 2px solid #c3e6cb;
         }
-        
         .win-message.show {
             animation: winMessagePulse 0.8s forwards;
         }
-        
         @keyframes winMessagePulse {
             0% { opacity: 0; transform: translateY(20px) scale(0.8); }
             50% { opacity: 1; transform: translateY(0) scale(1.05); }
             70% { transform: scale(0.95); }
             100% { opacity: 1; transform: scale(1); }
         }
-        
         .lose-message {
             background: linear-gradient(to bottom, #f8d7da, #f5c6cb);
             color: #721c24;
             border: 2px solid #f5c6cb;
         }
-        
         .lose-message.show {
             animation: loseMessageShake 0.6s forwards;
         }
-        
         @keyframes loseMessageShake {
             0% { opacity: 0; transform: translateY(20px) translateX(0); }
             20% { opacity: 1; transform: translateY(0) translateX(-10px); }
@@ -356,7 +315,6 @@
             80% { transform: translateX(5px); }
             100% { opacity: 1; transform: translateX(0); }
         }
-        
         .instructions {
             max-width: 600px;
             background-color: #e6c9a8;
@@ -370,7 +328,6 @@
             position: relative;
             overflow: hidden;
         }
-        
         .instructions::before {
             content: "";
             position: absolute;
@@ -382,7 +339,6 @@
             opacity: 0.3;
             z-index: 0;
         }
-        
         .instructions h2 {
             color: #5a3d2b;
             margin-top: 0;
@@ -390,18 +346,15 @@
             position: relative;
             z-index: 1;
         }
-        
         .instructions ul {
             padding-left: 20px;
             position: relative;
             z-index: 1;
         }
-        
         .instructions li {
             margin-bottom: 10px;
             line-height: 1.4;
         }
-        
         .keyboard-hint {
             font-size: 0.9em;
             color: #8b5a2b;
@@ -424,18 +377,14 @@
                 <!-- <div>Moves: <span id="move-count">0</span></div> -->
             </div>
         </div>
-        
         <div id="game-board" class="game-board"></div>
-        
         <div class="controls">
             <button id="prev-level">Previous Level</button>
             <button id="reset-level">Reset Level</button>
             <button id="next-level">Next Level</button>
         </div>
-        
         <div id="message" class="message"></div>
     </div>
-    
     <div class="instructions">
         <h2>How to Play</h2>
         <ul>
@@ -451,7 +400,6 @@
         // Game constants
         const SQUIRREL = "🐿️";
         const NUT = "🥜";
-        
         // Direction to arrow symbol mapping
         const directionToSymbol = {
             "0,0": "■",
@@ -464,20 +412,20 @@
             "-1,0": "←",
             "-1,1": "↖"
         };
-        
         // Game state
         let currentLevel = 0;
         let gameBoard = [];
         let moveCount = 0;
         let gameActive = true;
-        
+        let isAnimating = false; // Flag to prevent input during animation
+
         // Levels data (in a real implementation, this would be loaded from a file)
         const levels = [
             // Tutorial 1
             [
-                [" ", " ", " ", " ", " "],
-                [" ", "→", NUT, " ", " "],
-                [" ", " ", " ", " ", " "]
+                [" ", " ", " ", " ", " ", " "],
+                ["→", "→", NUT, " ", " ", " "],
+                [" ", " ", " ", " ", " ", " "]
             ],
             // Tutorial 2
             [
@@ -596,7 +544,7 @@
             ]
         ];
         // Place SQUIRREL at the target coordinates (1-based index)
-        levels[0][1][3] = SQUIRREL; // Tutorial 1
+        levels[0][1][4] = SQUIRREL; // Tutorial 1
         levels[1][3][3] = SQUIRREL; // Tutorial 2
         levels[2][3][3] = SQUIRREL; // Tutorial 3
         levels[3][3][7] = SQUIRREL; // Tutorial 4
@@ -610,7 +558,6 @@
         levels[11][3][6] = SQUIRREL; // Middle 9
         levels[12][0][1] = SQUIRREL; // hard 10
         levels[13][4][7] = SQUIRREL; // Megaminds only
-        
         // Level names
         const levelNames = [
             "Tutorial 1",
@@ -628,7 +575,6 @@
             "hard 10 = 2*4+2",
             "Megaminds only"
         ];
-        
         // Cell class
         class Cell {
             constructor(symbol) {
@@ -638,7 +584,6 @@
                 this.isObjectToPush = symbol === NUT;
                 this.isBreakable = symbol === NUT;
                 this.isPusherArrow = Object.values(directionToSymbol).includes(symbol);
-                
                 if (this.isPusherArrow) {
                     // Find direction for arrow
                     for (const [dir, sym] of Object.entries(directionToSymbol)) {
@@ -652,7 +597,6 @@
                 }
             }
         }
-        
         // Initialize the game
         function initGame() {
             document.getElementById('total-levels').textContent = levels.length;
@@ -660,32 +604,26 @@
             loadLevel(currentLevel);
             setupEventListeners();
         }
-        
         // Populate the level dropdown
         function populateLevelDropdown() {
             const dropdown = document.getElementById('level-dropdown');
             dropdown.innerHTML = '';
-            
             for (let i = 0; i < levels.length; i++) {
                 const levelLink = document.createElement('a');
                 levelLink.textContent = `${i + 1}. ${levelNames[i]}`;
                 levelLink.dataset.level = i;
-                
                 if (i === currentLevel) {
                     levelLink.classList.add('selected');
                 }
-                
                 levelLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     const levelIndex = parseInt(e.target.dataset.level);
                     loadLevel(levelIndex);
                     toggleLevelDropdown(false);
                 });
-                
                 dropdown.appendChild(levelLink);
             }
         }
-        
         // Toggle level dropdown visibility
         function toggleLevelDropdown(show) {
             const dropdown = document.getElementById('level-dropdown');
@@ -696,22 +634,18 @@
                 dropdown.style.display = show ? 'block' : 'none';
             }
         }
-        
         // Load a specific level
         function loadLevel(levelIndex) {
             if (levelIndex < 0 || levelIndex >= levels.length) return;
-            
             currentLevel = levelIndex;
             gameActive = true;
             moveCount = 0;
             updateMoveCount();
             updateLevelInfo();
             hideMessage();
-            
             // Create game board from level data
             const levelData = levels[levelIndex];
             gameBoard = [];
-            
             // Reverse the level data to match the original game's orientation
             for (let y = levelData.length - 1; y >= 0; y--) {
                 const row = [];
@@ -721,11 +655,10 @@
                 }
                 gameBoard.push(row);
             }
-            
             renderBoard();
             updateDropdownSelection();
+            isAnimating = false;
         }
-        
         // Update dropdown selection
         function updateDropdownSelection() {
             const dropdownLinks = document.querySelectorAll('#level-dropdown a');
@@ -737,15 +670,12 @@
                 }
             });
         }
-        
         // Render the game board
         function renderBoard() {
             const boardElement = document.getElementById('game-board');
             boardElement.innerHTML = '';
-            
             // Set grid dimensions
             boardElement.style.gridTemplateColumns = `repeat(${gameBoard[0].length}, 40px)`;
-            
             // Create cells
             for (let y = gameBoard.length - 1; y >= 0; y--) {
                 for (let x = 0; x < gameBoard[y].length; x++) {
@@ -754,7 +684,6 @@
                     cellElement.textContent = gameBoard[y][x].symbol;
                     cellElement.dataset.x = x;
                     cellElement.dataset.y = y;
-                    
                     // Add special classes for different cell types
                     if (gameBoard[y][x].isPusherArrow) {
                         cellElement.classList.add('arrow');
@@ -763,117 +692,213 @@
                     } else if (gameBoard[y][x].isObjectToPush) {
                         cellElement.classList.add('nut');
                     }
-                    
                     // Add click event for pusher arrows
                     if (gameBoard[y][x].isPusherArrow && gameActive) {
                         cellElement.addEventListener('click', () => handleMove(x, y));
                     }
-                    
                     boardElement.appendChild(cellElement);
                 }
             }
         }
-        
         // Handle a move
         function handleMove(x, y) {
-            if (!gameActive) return;
-            
+            if (!gameActive || isAnimating) return; // Ignore if game is inactive or animating
+
             const cell = gameBoard[y][x];
             if (!cell.isPusherArrow) return;
-            
+
+            isAnimating = true; // Set animation flag
             moveCount++;
             updateMoveCount();
-            
+
             // Add animation to the clicked arrow
             const arrowCell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
-            arrowCell.classList.add('active');
-            
+            if (arrowCell) {
+                arrowCell.classList.add('active');
+                // Remove active class after animation
+                setTimeout(() => {
+                    arrowCell.classList.remove('active');
+                }, 500); // Match CSS animation duration
+            }
+
             const dx = cell.pushX;
             const dy = cell.pushY;
-            
             let insertionCell = new Cell(" ");
             let xToInsert = x + dx;
             let yToInsert = y + dy;
-            
-            // Track cells to animate
-            const cellsToAnimate = [];
-            
+
+            // Store animation data: {startX, startY, endX, endY, cellElement}
+            const animationData = [];
+
+            // Calculate final positions and collect animation data
             while (isInBounds(xToInsert, yToInsert)) {
                 const targetCell = gameBoard[yToInsert][xToInsert];
+
                 // Check win/lose conditions
                 if (targetCell.isTarget) {
-                    // targetCell.symbol = targetCell.symbol + insertionCell.symbol; // Here should be insertionCell.symbol under targetCell.symbol
-                    
-                    // Add animation to the target cell
-                    cellsToAnimate.push({x: xToInsert, y: yToInsert});
-                    
-                    renderBoard();
-                    animateCells(cellsToAnimate);
-                    
+                    // Add animation data for the last cell if it's the nut
                     if (insertionCell.isObjectToPush) {
-                        setTimeout(() => endGame(true), 300);
-                        return;
+                         const movingCellElement = document.querySelector(`.cell[data-x="${xToInsert - dx}"][data-y="${yToInsert - dy}"]`);
+                         if (movingCellElement) {
+                            animationData.push({
+                                startX: xToInsert - dx,
+                                startY: yToInsert - dy,
+                                endX: xToInsert,
+                                endY: yToInsert,
+                                cellElement: movingCellElement
+                            });
+                         }
+                        // Animate, then win
+                        animateMovement(animationData, () => {
+                             // Update board state after animation
+                            //  gameBoard[yToInsert][xToInsert] = insertionCell; // Place nut at squirrel
+                            //  gameBoard[yToInsert - dy][xToInsert - dx] = insertionCell; // Clear old nut position
+                             renderBoard(); // Re-render to show final state
+                             setTimeout(() => endGame(true), 100); // Delay win slightly after animation
+                        });
                     } else {
-                        setTimeout(() => endGame(false), 300);
-                        return;
-                    }
-                }
-                
+                        // Animate, then lose (nut hits squirrel but isn't the object)
+                        const movingCellElement = document.querySelector(`.cell[data-x="${xToInsert - dx}"][data-y="${yToInsert - dy}"]`);
+                        if (movingCellElement) {
+                            animationData.push({
+                                startX: xToInsert - dx,
+                                startY: yToInsert - dy,
+                                endX: xToInsert,
+                                endY: yToInsert,
+                                cellElement: movingCellElement
+                            });
+                        }
+                        animateMovement(animationData, () => {
+                             // Update board state after animation
+                             gameBoard[yToInsert][xToInsert] = targetCell; // Place object at squirrel
+                             gameBoard[yToInsert - dy][xToInsert - dx] = new Cell(" "); // Clear old object position
+                             renderBoard(); // Re-render to show final state
+                             setTimeout(() => endGame(false), 100); // Delay lose slightly after animation
+                        });
+                    } 
+                    return; // Exit function after win/lose animation starts
+                } 
                 // Check for collision
                 if (insertionCell.isBreakable && !targetCell.isEmpty) {
-                    // Add animation to the collision cell
-                    cellsToAnimate.push({x: xToInsert, y: yToInsert});
-                    animateCells(cellsToAnimate);
-                    renderBoard()
-                    
-                    setTimeout(() => endGame(false), 300);
-                    return;
+                    // Add animation data for the cell that hits the obstacle
+                    const movingCellElement = document.querySelector(`.cell[data-x="${xToInsert - dx}"][data-y="${yToInsert - dy}"]`);
+                    if (movingCellElement) {
+                        animationData.push({
+                            startX: xToInsert - dx,
+                            startY: yToInsert - dy,
+                            endX: xToInsert,
+                            endY: yToInsert,
+                            cellElement: movingCellElement
+                        });
+                    }
+                    // Animate, then lose
+                    animateMovement(animationData, () => {
+                        // Update board state after animation (optional, as game ends)
+                        // gameBoard[yToInsert][xToInsert] remains unchanged
+                        // gameBoard[yToInsert - dy][xToInsert - dx] = insertionCell; // Place nut at collision point
+                        renderBoard(); // Re-render if needed
+                        setTimeout(() => endGame(false), 100); // Delay lose slightly after animation
+                    });
+                    return; // Exit function after collision animation starts
                 }
-                
-                // Add animation to the moving cell
+
+                // Add animation data for the moving cell
                 if (!insertionCell.isEmpty) {
-                    cellsToAnimate.push({x: xToInsert, y: yToInsert});
+                    const movingCellElement = document.querySelector(`.cell[data-x="${xToInsert - dx}"][data-y="${yToInsert - dy}"]`);
+                    if (movingCellElement) {
+                        animationData.push({
+                            startX: xToInsert - dx,
+                            startY: yToInsert - dy,
+                            endX: xToInsert,
+                            endY: yToInsert,
+                            cellElement: movingCellElement
+                        });
+                    }
                 }
-                
-                // Swap cells
+
+                // Swap cells in temporary state for next iteration calculation
+                const tempCell = gameBoard[yToInsert][xToInsert]    ;
                 gameBoard[yToInsert][xToInsert] = insertionCell;
-                insertionCell = targetCell;
-                
+                insertionCell = tempCell;
+
                 // Stop if we've inserted an empty cell
                 if (insertionCell.isEmpty) break;
-                
+
                 // Move to next position
                 xToInsert += dx;
                 yToInsert += dy;
             }
-            
-            renderBoard();
-            animateCells(cellsToAnimate);
-        }
-        
-        // Animate cells that are moving
-        function animateCells(cells) {
-            cells.forEach(({x, y}) => {
-                const cellElement = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
-                if (cellElement) {
-                    cellElement.classList.add('moving');
-                    setTimeout(() => {
-                        cellElement.classList.remove('moving');
-                    }, 300);
+
+            // If we exited the loop normally (no win/lose/collision), animate the movement
+            animateMovement(animationData, () => {
+                // Update the actual game board state after animation completes
+                let tempX = x + dx;
+                let tempY = y + dy;
+                let tempInsertionCell = new Cell(" ");
+
+                while (isInBounds(tempX, tempY)) {
+                    const targetCell = gameBoard[tempY][tempX];
+                    gameBoard[tempY][tempX] = tempInsertionCell;
+                    tempInsertionCell = targetCell;
+                    if (tempInsertionCell.isEmpty) break;
+                    tempX += dx;
+                    tempY += dy;
                 }
+                renderBoard(); // Re-render the board with the updated state
+                isAnimating = false; // Allow new moves
             });
         }
-        
+
+        // Animate the movement of cells
+        function animateMovement(animationData, onComplete) {
+            if (animationData.length === 0) {
+                isAnimating = false;
+                if (onComplete) onComplete();
+                return;
+            }
+
+            const animationPromises = [];
+
+            animationData.forEach(data => {
+                const { startX, startY, endX, endY, cellElement } = data;
+                // Calculate the translation needed (in grid units, then convert to pixels)
+                const deltaX = endX - startX;
+                const deltaY = endY - startY;
+                const translateX = deltaX * 43; // 40px cell width + 3px gap
+                const translateY = (startY - endY) * 43; // Invert Y because grid Y increases downwards
+
+                // Apply the transform
+                cellElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
+                cellElement.classList.add('moving'); // Add moving class for potential styling
+
+                // Create a promise that resolves when the transition ends
+                const promise = new Promise(resolve => {
+                    const listener = () => {
+                        cellElement.removeEventListener('transitionend', listener);
+                        cellElement.classList.remove('moving');
+                        cellElement.style.transform = ''; // Reset transform
+                        resolve();
+                    };
+                    cellElement.addEventListener('transitionend', listener);
+                });
+                animationPromises.push(promise);
+            });
+
+            // Wait for all animations to complete
+            Promise.all(animationPromises).then(() => {
+                isAnimating = false; // Animation finished, allow new moves
+                if (onComplete) onComplete();
+            });
+        }
+
         // Check if coordinates are within the game board
         function isInBounds(x, y) {
             return y >= 0 && y < gameBoard.length && x >= 0 && x < gameBoard[0].length;
         }
-        
         // End the game with win/lose message
         function endGame(isWin) {
             gameActive = false;
             const messageElement = document.getElementById('message');
-            
             if (isWin) {
                 messageElement.textContent = `You won!`
                 messageElement.className = 'message win-message';
@@ -881,31 +906,26 @@
                 messageElement.textContent = 'Game over! Try again.';
                 messageElement.className = 'message lose-message';
             }
-            
             messageElement.style.display = 'block';
             // Add animation class with a small delay to ensure the display change has taken effect
             setTimeout(() => {
                 messageElement.classList.add('show');
             }, 10);
         }
-        
         // Update move count display
         function updateMoveCount() {
             // document.getElementById('move-count').textContent = moveCount;
         }
-        
         // Update level info display
         function updateLevelInfo() {
             document.getElementById('current-level').textContent = currentLevel + 1;
         }
-        
         // Hide message
         function hideMessage() {
             const messageElement = document.getElementById('message');
             messageElement.classList.remove('show');
             messageElement.style.display = 'none';
         }
-        
         // Setup event listeners
         function setupEventListeners() {
             // Level selector click
@@ -913,34 +933,28 @@
                 e.stopPropagation();
                 toggleLevelDropdown();
             });
-            
             // Close dropdown when clicking outside
             document.addEventListener('click', () => {
                 toggleLevelDropdown(false);
             });
-            
             // Prevent dropdown from closing when clicking inside it
             document.getElementById('level-dropdown').addEventListener('click', (e) => {
                 e.stopPropagation();
             });
-            
             // Button controls
             document.getElementById('prev-level').addEventListener('click', () => {
                 if (currentLevel > 0) {
                     loadLevel(currentLevel - 1);
                 }
             });
-            
             document.getElementById('next-level').addEventListener('click', () => {
                 if (currentLevel < levels.length - 1) {
                     loadLevel(currentLevel + 1);
                 }
             });
-            
             document.getElementById('reset-level').addEventListener('click', () => {
                 loadLevel(currentLevel);
             });
-            
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft' && currentLevel > 0) {
@@ -950,7 +964,6 @@
                 }
             });
         }
-        
         // Start the game when the page loads
         window.addEventListener('DOMContentLoaded', initGame);
     </script>
