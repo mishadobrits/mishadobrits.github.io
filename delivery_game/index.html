@@ -201,6 +201,16 @@
             opacity: 0.6;
         }
         
+        .cell.arrow.active {
+            animation: arrowPulse 0.5s ease-out;
+        }
+        
+        @keyframes arrowPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); box-shadow: 0 0 15px rgba(139, 90, 43, 0.8); }
+            100% { transform: scale(1); }
+        }
+        
         .cell.squirrel {
             background-color: #f0d9b5;
             animation: bounce 3s infinite alternate;
@@ -209,6 +219,17 @@
         .cell.nut {
             background-color: #f0d9b5;
             animation: wobble 4s infinite;
+        }
+        
+        .cell.moving {
+            animation: pushMove 0.3s ease-out;
+            z-index: 10;
+        }
+        
+        @keyframes pushMove {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 10px rgba(74, 44, 23, 0.7); }
+            100% { transform: scale(1); }
         }
         
         @keyframes bounce {
@@ -286,6 +307,18 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             position: relative;
             z-index: 1;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .message.show {
+            display: block;
+            animation: messageAppear 0.5s forwards;
+        }
+        
+        @keyframes messageAppear {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         
         .win-message {
@@ -294,10 +327,34 @@
             border: 2px solid #c3e6cb;
         }
         
+        .win-message.show {
+            animation: winMessagePulse 0.8s forwards;
+        }
+        
+        @keyframes winMessagePulse {
+            0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+            50% { opacity: 1; transform: translateY(0) scale(1.05); }
+            70% { transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
         .lose-message {
             background: linear-gradient(to bottom, #f8d7da, #f5c6cb);
             color: #721c24;
             border: 2px solid #f5c6cb;
+        }
+        
+        .lose-message.show {
+            animation: loseMessageShake 0.6s forwards;
+        }
+        
+        @keyframes loseMessageShake {
+            0% { opacity: 0; transform: translateY(20px) translateX(0); }
+            20% { opacity: 1; transform: translateY(0) translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+            100% { opacity: 1; transform: translateX(0); }
         }
         
         .instructions {
@@ -727,6 +784,10 @@
             moveCount++;
             updateMoveCount();
             
+            // Add animation to the clicked arrow
+            const arrowCell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+            arrowCell.classList.add('active');
+            
             const dx = cell.pushX;
             const dy = cell.pushY;
             
@@ -734,24 +795,44 @@
             let xToInsert = x + dx;
             let yToInsert = y + dy;
             
+            // Track cells to animate
+            const cellsToAnimate = [];
+            
             while (isInBounds(xToInsert, yToInsert)) {
                 const targetCell = gameBoard[yToInsert][xToInsert];
-                console.log("Insertion Cell", insertionCell, " TargetCell", targetCell)
                 // Check win/lose conditions
                 if (targetCell.isTarget) {
+                    // targetCell.symbol = targetCell.symbol + insertionCell.symbol; // Here should be insertionCell.symbol under targetCell.symbol
+                    
+                    // Add animation to the target cell
+                    cellsToAnimate.push({x: xToInsert, y: yToInsert});
+                    
+                    renderBoard();
+                    animateCells(cellsToAnimate);
+                    
                     if (insertionCell.isObjectToPush) {
-                        endGame(true);
+                        setTimeout(() => endGame(true), 300);
                         return;
                     } else {
-                        endGame(false);
+                        setTimeout(() => endGame(false), 300);
                         return;
                     }
                 }
                 
                 // Check for collision
                 if (insertionCell.isBreakable && !targetCell.isEmpty) {
-                    endGame(false);
+                    // Add animation to the collision cell
+                    cellsToAnimate.push({x: xToInsert, y: yToInsert});
+                    animateCells(cellsToAnimate);
+                    renderBoard()
+                    
+                    setTimeout(() => endGame(false), 300);
                     return;
+                }
+                
+                // Add animation to the moving cell
+                if (!insertionCell.isEmpty) {
+                    cellsToAnimate.push({x: xToInsert, y: yToInsert});
                 }
                 
                 // Swap cells
@@ -767,6 +848,20 @@
             }
             
             renderBoard();
+            animateCells(cellsToAnimate);
+        }
+        
+        // Animate cells that are moving
+        function animateCells(cells) {
+            cells.forEach(({x, y}) => {
+                const cellElement = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+                if (cellElement) {
+                    cellElement.classList.add('moving');
+                    setTimeout(() => {
+                        cellElement.classList.remove('moving');
+                    }, 300);
+                }
+            });
         }
         
         // Check if coordinates are within the game board
@@ -788,6 +883,10 @@
             }
             
             messageElement.style.display = 'block';
+            // Add animation class with a small delay to ensure the display change has taken effect
+            setTimeout(() => {
+                messageElement.classList.add('show');
+            }, 10);
         }
         
         // Update move count display
@@ -802,7 +901,9 @@
         
         // Hide message
         function hideMessage() {
-            document.getElementById('message').style.display = 'none';
+            const messageElement = document.getElementById('message');
+            messageElement.classList.remove('show');
+            messageElement.style.display = 'none';
         }
         
         // Setup event listeners
