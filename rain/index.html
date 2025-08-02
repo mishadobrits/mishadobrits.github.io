@@ -338,14 +338,16 @@
             ctx.translate(d.x, d.y);
             ctx.fillStyle = gameOver ? 'rgba(150,180,210,0.9)' : 'rgba(200,230,255,0.9)';
             ctx.beginPath();
-            ctx.moveTo(0, -d.r);
-            ctx.bezierCurveTo(d.r, -d.r, d.r, d.r*0.3, 0, d.r);
-            ctx.bezierCurveTo(-d.r, d.r*0.3, -d.r, -d.r, 0, -d.r);
+            // Start from the bottom point instead of top
+            ctx.moveTo(0, d.r);
+            // Draw curves to create a drop pointing downward
+            ctx.bezierCurveTo(d.r, d.r, d.r, -d.r*0.3, 0, -d.r);
+            ctx.bezierCurveTo(-d.r, -d.r*0.3, -d.r, d.r, 0, d.r);
             ctx.fill();
-            // highlight
+            // highlight - adjust position to be on the top-left of the drop
             ctx.fillStyle = gameOver ? 'rgba(220,220,230,0.6)' : 'rgba(255,255,255,0.6)';
             ctx.beginPath();
-            ctx.ellipse(-d.r*0.35, -d.r*0.2, d.r*0.25, d.r*0.4, 0, 0, Math.PI*2);
+            ctx.ellipse(-d.r*0.35, d.r*0.2, d.r*0.25, d.r*0.4, 0, 0, Math.PI*2);
             ctx.fill();
             ctx.restore();
         }
