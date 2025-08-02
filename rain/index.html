@@ -260,11 +260,6 @@
             g.addColorStop(1, '#1e69de');
             ctxBg.fillStyle = g;
             ctxBg.fillRect(0,0,W,H);
-            // Decorative horizon
-            ctxBg.fillStyle = 'rgba(255,255,255,0.08)';
-            for (let i=0;i<6;i++){
-                ctxBg.fillRect(0, H*(0.15+i*0.12), W, 2);
-            }
         }
         
         function initStormyBackground() {
@@ -273,14 +268,6 @@
             g.addColorStop(1, '#0a2a5a');
             ctxBg.fillStyle = g;
             ctxBg.fillRect(0,0,W,H);
-            
-            // // Decorative horizon
-            // ctxBg.fillStyle = 'rgba(255,255,255,0.05)';
-            // for (let i=0; i<6; i++) {
-            //     // Round the y position to avoid sub-pixel rendering
-            //     const yPos = Math.round(H * (0.15 + i * 0.12));
-            //     ctxBg.fillRect(0, yPos, W, 2);
-            // }
         }
         
         // initBackground();
