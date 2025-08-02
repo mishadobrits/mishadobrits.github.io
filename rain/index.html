@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Rain Dodge</title>
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: linear-gradient(#6db3f2, #1e69de);
+            overflow: hidden;
+            /* cursor: none; */
+            user-select: none;
+        }
+        #game {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .overlay-darken {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0);
+            pointer-events: none;
+            transition: background 0.6s ease;
+        }
+        .overlay-darken.show {
+            background: rgba(0,0,0,0.55);
+        }
+        .lightning {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.12s ease;
+            mix-blend-mode: screen;
+        }
+        .lightning.show {
+            opacity: 1;
+        }
+        .hud {
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            font: 700 18px system-ui, sans-serif;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            z-index: 20;
+        }
+        .center-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            font: 800 28px system-ui, sans-serif;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+            z-index: 30;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .center-message.show {
+            opacity: 1;
+        }
+        /* .cursor {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            margin-left: -12px;
+            margin-top: -12px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #ffd27a 70%);
+            box-shadow: 0 0 10px rgba(255,220,120,0.9);
+            pointer-events: none;
+            z-index: 15;
+        } */
+    </style>
+</head>
+<body>
+    <div id="game">
+        <canvas id="bg" width="800" height="600"></canvas>
+        <canvas id="clouds" width="800" height="0" style="position:absolute;left:0;top:0;"></canvas>
+        <canvas id="drops" width="800" height="0" style="position:absolute;left:0;top:0;"></canvas>
+        <canvas id="fx" width="800" height="0" style="position:absolute;left:0;top:0;"></canvas>
+        <div class="overlay-darken" id="overlay"></div>
+        <div class="lightning" id="lightning"></div>
+        <div class="hud" id="hud">Score: 0</div>
+        <div class="center-message" id="centerMsg">Click to start</div>
+        <!-- <div class="cursor" id="cursor"></div> -->
+        <!-- <div class="death-cursor" id="deathCursor"></div> -->
+    </div>
+    <script>
+        const game = document.getElementById('game');
+        const bg = document.getElementById('bg');
+        const cloudsCanvas = document.getElementById('clouds');
+        const dropsCanvas = document.getElementById('drops');
+        const fxCanvas = document.getElementById('fx');
+        const overlay = document.getElementById('overlay');
+        const lightningEl = document.getElementById('lightning');
+        const hud = document.getElementById('hud');
+        const centerMsg = document.getElementById('centerMsg');
+        const cursorEl = document.getElementById('cursor');
+        const canvases = [bg, cloudsCanvas, dropsCanvas, fxCanvas];
+        const ctxBg = bg.getContext('2d');
+        const ctxClouds = cloudsCanvas.getContext('2d');
+        const ctxDrops = dropsCanvas.getContext('2d');
+        const ctxFx = fxCanvas.getContext('2d');
+    </script>
+    <script>
+        const canvas = fxCanvas;
+        const ctx = ctxFx;
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(innerWidth * dpr);
+            canvas.height = Math.floor(innerHeight * dpr);
+            canvas.style.width = innerWidth + 'px';
+            canvas.style.height = innerHeight + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        addEventListener('resize', resize, { passive: true });
+        resize();
+        // Store mouse positions with timestamps
+        const history = [];
+        let lastMove = { x: innerWidth / 2, y: innerHeight / 2 };
+        addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        lastMove = { x: e.clientX, y: e.clientY };
+        history.push({ t: now, x: e.clientX, y: e.clientY });
+        // Keep only last ~2 seconds to limit memory
+        const cutoff = now - 2000;
+        while (history.length && history[0].t < cutoff) history.shift();
+        }, { passive: true });
+        // Approximate default arrow cursor points (relative)
+        // Base shape pointing to the right-up direction (like standard arrow),
+        // then we rotate to match typical arrow angle (~-45 degrees).
+        // We'll define a simple shape and rotate it.
+        const baseShape = [
+            { x: 0, y: 0 },
+            { x: 0, y: 24 },
+            { x: 6, y: 18 },
+            { x: 11, y: 28 },
+            { x: 16, y: 26 },
+            { x: 11, y: 16 },
+            { x: 20, y: 16 },
+        ];
+        
+        // Rotate base shape by -45 degrees to resemble standard cursor orientation
+        function rotatePoints(points, angleRad) {
+            const cos = Math.cos(angleRad), sin = Math.sin(angleRad);
+            return points.map(p => ({ x: p.x * cos - p.y * sin, y: p.x * sin + p.y * cos }));
+        }
+        
+        function drawCursorPoly(x, y, scale = 1) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            // Draw white fill with black outline to mimic typical cursor
+            ctx.beginPath();
+            baseShape.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.closePath();
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1.5;
+            ctx.fill();
+            ctx.stroke();
+            // Optional shadow for depth
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.restore();
+        }
+    </script>
+    <script>
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvases.forEach(c => {
+            c.width = W;
+            c.height = H;
+        });
+        // Game state
+        let running = false;
+        let gameOver = false;
+        let score = 0;
+        let mouse = { x: W/2, y: H/2 };
+        let playerRadius = 12;
+        let deathPosition = null;
+        // Wind direction (in radians)
+        let windDirection = 0;
+        let windStrength = 0;
+        // Clouds movement flag
+        let cloudsMoving = false;
+        // Drops and umbrellas
+        const drops = [];
+        const umbrellas = [];
+        // Spawn timers
+        let dropTimer = 0;
+        let dropInterval = 160; // ms
+        let umbrellaTimer = 0;
+        let umbrellaInterval = 1600; // ms
+        // Rain intensity variables
+        let gameTime = 0; // Track how long the game has been running
+        let baseDropSpeed = 0.2; // Base vertical speed for drops
+        let baseDropInterval = 160; // Base interval between drops
+        
+        // Clouds
+        let clouds = [];
+        let cloudSpeed = 0.06; // px per ms
+        
+        function makeCloud(x, y, scale=1) {
+            return { x, y, scale };
+        }
+        
+        function initClouds() {
+            clouds = [];
+            const rows = 2;
+            n = 30
+            for (let r=0; r<rows; r++) {
+                for (let i=0; i<n; i++) {
+                    const cx = rand(-100, W + 100); 
+                    const cy = rand(0, H / 6);
+                    const sc = 0.8 + Math.random()*0.3;
+                    clouds.push(makeCloud(cx, cy, sc));
+                }
+            }
+        }
+
+        function generateWind() {
+            // Generate random wind direction in radians (0 to 2π)
+            windDirection = Math.PI / 2 + Math.random() * Math.PI * 4;
+            // Wind strength between 0.02 and 0.1
+            windStrength = 0.02 + Math.random() * 0.08;
+            // Set cloud speed based on wind
+            cloudSpeed = windStrength;
+        }
+        
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvases.forEach(c => {
+                c.width = W;
+                c.height = H;
+            });
+            initBackground();
+            initClouds();
+        }
+        
+        window.addEventListener('resize', resize);
+        
+        // Background gradient and soft ground
+        function initBackground() {
+            const g = ctxBg.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, '#6db3f2');
+            g.addColorStop(1, '#1e69de');
+            ctxBg.fillStyle = g;
+            ctxBg.fillRect(0,0,W,H);
+            // Decorative horizon
+            ctxBg.fillStyle = 'rgba(255,255,255,0.08)';
+            for (let i=0;i<6;i++){
+                ctxBg.fillRect(0, H*(0.15+i*0.12), W, 2);
+            }
+        }
+        
+        function initStormyBackground() {
+            const g = ctxBg.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, '#2a4d7c');
+            g.addColorStop(1, '#0a2a5a');
+            ctxBg.fillStyle = g;
+            ctxBg.fillRect(0,0,W,H);
+            
+            // // Decorative horizon
+            // ctxBg.fillStyle = 'rgba(255,255,255,0.05)';
+            // for (let i=0; i<6; i++) {
+            //     // Round the y position to avoid sub-pixel rendering
+            //     const yPos = Math.round(H * (0.15 + i * 0.12));
+            //     ctxBg.fillRect(0, yPos, W, 2);
+            // }
+        }
+        
+        // initBackground();
+        initClouds();
+        
+        // Helpers
+        function rand(min,max){
+            return Math.random()*(max-min)+min;
+        }
+        
+        function spawnDrop() {
+            const x = rand(8, W-8);
+            // Calculate drop speed based on game time and wind
+            const speedMultiplier = 1 + (gameTime / 30000); // Increase speed over time (30s = double speed)
+            const verticalSpeed = baseDropSpeed * speedMultiplier;
+            const horizontalSpeed = Math.cos(windDirection) * windStrength * speedMultiplier;
+            
+            drops.push({ 
+                x, 
+                y: -20, 
+                r: rand(5, 9), 
+                vy: verticalSpeed, // px per ms
+                vx: horizontalSpeed, // horizontal component based on wind
+                life: 1 
+            });
+        }
+        
+        function spawnUmbrella() {
+            const x = rand(20, W-20);
+            const speedMultiplier = 1 + (gameTime / 30000); // Increase speed over time (30s = double speed)
+            const verticalSpeed = baseDropSpeed * speedMultiplier;
+            const horizontalSpeed = Math.cos(windDirection) * windStrength * speedMultiplier;
+            umbrellas.push({ 
+                x, 
+                y: -30, 
+                vx: horizontalSpeed,
+                vy: verticalSpeed, 
+                collected: false, 
+                rot: rand(-0.2,0.2), 
+                r: 12 
+            });
+        }
+        
+        function drawCloud(ctx, x, y, s) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(s, s);
+            ctx.fillStyle = gameOver ? 'rgba(180,180,190,0.95)' : 'rgba(255,255,255,0.95)';
+            ctx.beginPath();
+            // simple puffy cloud via circles
+            const parts = [
+                {x:0, y:10, r:22},
+                {x:22, y:10, r:18},
+                {x:-20, y:12, r:16},
+                {x:8, y:0, r:20},
+                {x:-8, y:0, r:18},
+            ];
+            parts.forEach(p=>{
+                ctx.moveTo(p.x+p.r, p.y);
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            });
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function drawDrop(ctx, d) {
+            ctx.save();
+            ctx.translate(d.x, d.y);
+            ctx.fillStyle = gameOver ? 'rgba(150,180,210,0.9)' : 'rgba(200,230,255,0.9)';
+            ctx.beginPath();
+            ctx.moveTo(0, -d.r);
+            ctx.bezierCurveTo(d.r, -d.r, d.r, d.r*0.3, 0, d.r);
+            ctx.bezierCurveTo(-d.r, d.r*0.3, -d.r, -d.r, 0, -d.r);
+            ctx.fill();
+            // highlight
+            ctx.fillStyle = gameOver ? 'rgba(220,220,230,0.6)' : 'rgba(255,255,255,0.6)';
+            ctx.beginPath();
+            ctx.ellipse(-d.r*0.35, -d.r*0.2, d.r*0.25, d.r*0.4, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function drawUmbrella(ctx, u) {
+            ctx.save();
+            ctx.translate(u.x, u.y);
+            ctx.rotate(u.rot);
+            // canopy
+            const R = 16;
+            const segs = 5;
+            ctx.fillStyle = '#ff4d6d';
+            ctx.beginPath();
+            ctx.moveTo(-R,0);
+            ctx.quadraticCurveTo(0, -R*1.2, R, 0);
+            for (let i=1;i<segs;i++){
+                const t = i/segs;
+                ctx.quadraticCurveTo(R - t*2*R, (i%2? 4 : -2), R - t*2*R, 0);
+            }
+            ctx.closePath();
+            ctx.fill();
+            // handle
+            ctx.strokeStyle = '#5a3a1a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0,0);
+            ctx.lineTo(0,18);
+            ctx.arc(3,18,3,Math.PI,Math.PI*2);
+            ctx.stroke();
+            // small shine
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(-6,-8,4,2, -0.2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function drawPlayerCursor() {
+            // Don't draw cursor if game is over
+            if (gameOver) return;
+            ctxFx.clearRect(0, 0, W, H);
+
+            if (document.body.style.cursor == 'none') {
+                drawCursorPoly(mouse.x, mouse.y, 0.7);
+            }
+            
+        }
+        
+        function drawLightning(ctx) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            
+            // Scale the lightning to fit the screen
+            const scale = Math.min(W, H) / 200;
+            const centerX = W / 2;
+            const centerY = H / 2;
+            
+            ctx.translate(centerX, centerY);
+            ctx.scale(scale, scale);
+            
+            ctx.beginPath();
+            const points = [
+                {x: 0, y: -100},
+                {x: -37, y: 4},
+                {x: 30, y: 4},
+                {x: 0, y: 100},
+                {x: 37, y: -4},
+                {x: -30, y: -4},
+                {x: 0, y: -100}
+            ];
+            
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // Add glow effect
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function resetGame() {
+            drops.length = 0;
+            umbrellas.length = 0;
+            score = 0;
+            gameTime = 0;
+            dropTimer = 0;
+            dropInterval = baseDropInterval;
+            umbrellaTimer = 0;
+            gameOver = false;
+            deathPosition = null;
+            cloudsMoving = false;
+            overlay.classList.remove('show');
+            lightningEl.classList.remove('show');
+            hud.textContent = 'Score: 0';
+            centerMsg.textContent = 'Click to start';
+            centerMsg.classList.add('show');
+            initBackground();
+            initClouds();
+            
+            // Generate new wind direction for this game
+            generateWind();
+        }
+        
+        function startGame() {
+            if (running) return;
+            if (gameOver) resetGame();
+            running = true;
+            cloudsMoving = true; // Start cloud movement
+            centerMsg.classList.remove('show');
+            lastTime = performance.now();
+            
+            // Clear any previous cursor drawing from fx canvas
+            ctxFx.clearRect(0, 0, W, H);
+            document.body.style.cursor = 'none';
+            
+            requestAnimationFrame(loop);
+        }
+        
+        function endGame() {
+            gameOver = true;
+            running = false;
+            cloudsMoving = false; // Stop cloud movement
+            deathPosition = {x: mouse.x, y: mouse.y};
+            console.log(deathPosition)
+            overlay.classList.add('show');
+            initStormyBackground();
+            
+            // Clear the cursor
+            ctxFx.clearRect(0, 0, W, H);
+            document.body.style.cursor = 'pointer';
+
+            // Lightning flash a few times
+            let flashes = 0;
+            function flash() {
+                console.log(flashes)
+                
+                // Clear the fx canvas first
+                ctxFx.clearRect(0, 0, W, H);
+                
+                // Draw lightning on fx canvas
+                drawLightning(ctxFx);
+                
+                // Draw cursor poly after lightning
+                drawCursorPoly(deathPosition.x, deathPosition.y, 0.7);
+                
+                if (flashes >= 3) {
+                    centerMsg.textContent = `Game Over\nScore: ${score}\nClick to play again`;
+                    centerMsg.classList.add('show');
+                    return;
+                }
+                
+                setTimeout(()=>{
+                    flashes++;
+                    // Clear lightning but keep cursor visible
+                    ctxFx.clearRect(0, 0, W, H);
+                    // Redraw cursor poly to keep it visible
+                    drawCursorPoly(deathPosition.x, deathPosition.y, 0.7);
+                    
+                    setTimeout(flash, 120 + Math.random()*200);
+                }, 120);
+            }
+            setTimeout(flash, 80);
+        }
+        
+        game.addEventListener('mousemove', (e)=>{
+            const rect = game.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+            
+            // Draw cursor if game is not running and not over
+            drawPlayerCursor()
+            if (!running && !gameOver) {
+                ctxFx.clearRect(0, 0, W, H);
+                drawPlayerCursor();
+            }
+        });
+        
+        game.addEventListener('mouseleave', ()=>{
+            // keep last position, show message if not running
+        });
+        
+        game.addEventListener('click', ()=>{
+            if (!running) startGame();
+        });
+        
+        // Initial message
+        centerMsg.textContent = 'Move mouse to dodge rain\nCollect umbrellas\nClick to start';
+        centerMsg.classList.add('show');
+        
+        // Show cursor on start screen
+        ctxFx.clearRect(0, 0, W, H);
+        drawPlayerCursor()
+        
+        let lastTime = performance.now();
+        
+        function loop(t) {
+            const dt = Math.min(34, t - lastTime); // ms clamp
+            lastTime = t;
+            
+            // Update game time
+            gameTime += dt;
+            
+            // Update clouds - move based on wind direction if game is running
+            if (cloudsMoving) {
+                for (const c of clouds) {
+                    // Move clouds based on wind direction
+                    c.x += Math.cos(windDirection) * cloudSpeed * dt * 0.3;
+                    // c.y += Math.sin(windDirection) * cloudSpeed * dt * 0.2; // Less vertical movement
+                    
+                    // If cloud is completely off screen, teleport back
+                    if (c.x > W + 100 || c.x < -100) {
+                        // Reset cloud position based on wind direction
+                        if (Math.cos(windDirection) > 0) {
+                            // Wind blowing right, spawn on left
+                            c.x -= W + 200;
+                            c.y = 20 + Math.random() * (H/6);
+                        } else {
+                            // Wind blowing left, spawn on right
+                            c.x -= W + 200;
+                            c.y = 20 + Math.random() * (H/6);
+                        }
+                    }
+                    console.log("loop: c.x = ", c.x)
+                }
+            }
+            
+            // Spawn
+            dropTimer += dt;
+            umbrellaTimer += dt;
+            
+            // Increase rain intensity over time
+            const intensityMultiplier = 1 + (gameTime / 20000); // Double intensity every 20 seconds
+            const currentDropInterval = Math.max(40, baseDropInterval / intensityMultiplier);
+            
+            if (dropTimer >= currentDropInterval) {
+                dropTimer -= currentDropInterval;
+                spawnDrop();
+            }
+            
+            if (umbrellaTimer >= umbrellaInterval) {
+                umbrellaTimer -= umbrellaInterval;
+                spawnUmbrella();
+                // mild ramp
+                umbrellaInterval = Math.max(900, umbrellaInterval - 0.5);
+            }
+            
+            // Update drops
+            for (let i=drops.length-1; i>=0; i--) {
+                const d = drops[i];
+                d.y += d.vy * dt;
+                d.x += d.vx * dt; // Apply horizontal movement based on wind
+                
+                // remove if off-screen
+                if (d.y - d.r > H || d.x < -d.r || d.x > W + d.r) {
+                    drops.splice(i,1);
+                    continue;
+                }
+                
+                // collision with player
+                for (const elem of baseShape) {
+                    const dx = d.x - (elem.x + mouse.x);
+                    const dy = d.y - (elem.y + mouse.y);
+                    const rr = d.r * d.r * 0.8;
+                    if (dx*dx + dy*dy < rr) {
+                        endGame();
+                        // stop loop
+                        render(dt);
+                        return;
+                    }
+                }
+            }
+            
+            // Update umbrellas
+            for (let i=umbrellas.length-1;i>=0;i--){
+                const u = umbrellas[i];
+                u.x += u.vx * dt;
+                u.y += u.vy * dt;
+                u.rot += 0.0015 * dt;
+                if (u.y - 20 > H) {
+                    umbrellas.splice(i,1);
+                    continue;
+                }
+                for (const elem of baseShape) {
+                    const dx = u.x - (elem.x + mouse.x);
+                    const dy = u.y - (elem.y + mouse.y);
+                    const rr = u.r * u.r * 1.2;
+                    if (dx*dx + dy*dy < rr) {
+                        score += 1;
+                        hud.textContent = 'Score: ' + score;
+                        umbrellas.splice(i,1);
+                        // small sparkle
+                        sparkle(u.x, u.y);
+                        spawnUmbrella()
+                        break;
+                    }
+                }
+            }
+            
+            render(dt);
+            if (running) requestAnimationFrame(loop);
+        }
+        
+        function sparkle(x, y) {
+            const particles = [];
+            for (let i=0;i<12;i++){
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos((i/12)*Math.PI*2)*rand(0.1,0.25),
+                    vy: Math.sin((i/12)*Math.PI*2)*rand(0.1,0.25) - 0.02,
+                    life: 300
+                });
+            }
+            const start = performance.now();
+            function step(t){
+                const elapsed = t - start;
+                const dt = 16;
+                ctxFx.clearRect(0,0,W,H);
+                // draw current particles
+                particles.forEach(p=>{
+                    p.x += p.vx * dt;
+                    p.y += p.vy * dt;
+                    p.vy += 0.0004 * dt;
+                    p.life -= dt;
+                    const a = Math.max(0, p.life/300);
+                    ctxFx.fillStyle = `rgba(255,255,200,${a})`;
+                    ctxFx.beginPath();
+                    ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+                    ctx.fill();
+                });
+                if (particles.some(p=>p.life>0)) {
+                    requestAnimationFrame(step);
+                } else {
+                    ctxFx.clearRect(0,0,W,H);
+                    // Redraw cursor after sparkle effect
+                    if (!gameOver) {
+                        drawPlayerCursor();
+                    }
+                }
+            }
+            requestAnimationFrame(step);
+        }
+        
+        function render(dt) {
+            // Clear moving layers
+            ctxClouds.clearRect(0,0,W,H);
+            ctxDrops.clearRect(0,0,W,H);
+            
+            // Draw clouds
+            for (const c of clouds) drawCloud(ctxClouds, c.x, c.y, c.scale);
+            
+            // Draw umbrellas
+            for (const u of umbrellas) drawUmbrella(ctxDrops, u);
+            
+            // Draw drops
+            for (const d of drops) drawDrop(ctxDrops, d);
+            
+            // Draw player cursor (only if game is not over)
+            if (!gameOver) {
+                drawPlayerCursor();
+            }
+        }
+        
+        // Initial render
+        render(0);
+    </script>
+</body>
+</html>
