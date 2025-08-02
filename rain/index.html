@@ -498,7 +498,7 @@
                 drawCursorPoly(deathPosition.x, deathPosition.y, 0.7);
                 
                 if (flashes >= 3) {
-                    centerMsg.textContent = `Game Over\nScore: ${score}\nClick to play again`;
+                    centerMsg.innerHTML = `Game Over\nScore: ${score}<br>Click to play again`;
                     centerMsg.classList.add('show');
                     return;
                 }
@@ -538,7 +538,7 @@
         });
         
         // Initial message
-        centerMsg.textContent = 'Move mouse to dodge rain\nCollect umbrellas\nClick to start';
+        centerMsg.innerHTML = 'Move mouse to dodge rain<br>Collect umbrellas<br>Click to start';
         centerMsg.classList.add('show');
         
         // Show cursor on start screen
