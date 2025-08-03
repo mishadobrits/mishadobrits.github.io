@@ -9,11 +9,6 @@
         body {
             font-family: 'Kalam', cursive;
             background-color: #d9b38c;
-            /* background-image: 
-                linear-gradient(45deg, #d9b38c 25%, transparent 25%),
-                linear-gradient(-45deg, #d9b38c 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #d9b38c 75%),
-                linear-gradient(-45deg, transparent 75%, #d9b38c 75%); */
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             display: flex;
@@ -62,12 +57,17 @@
         .game-info {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
             font-size: 1.2em;
             background-color: rgba(139, 90, 43, 0.1);
             padding: 8px 15px;
             border-radius: 10px;
             border: 1px solid rgba(139, 90, 43, 0.3);
+        }
+        .level-info {
+            display: flex;
+            align-items: center;
         }
         .level-selector {
             position: relative;
@@ -81,7 +81,6 @@
         }
         .level-dropdown {
             display: none;
-            position: relative;
             background-color: #e6c9a8;
             min-width: 200px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
@@ -93,7 +92,6 @@
             top: 100%;
             left: 0;
             margin-top: 5px;
-            z-index: 20;
             text-align: left;
         }
         .level-dropdown a {
@@ -103,18 +101,54 @@
             display: block;
             font-weight: normal;
             transition: background-color 0.2s;
-            z-index: 20;
+            font-size: 1.1em;
         }
         .level-dropdown a:hover {
             background-color: #d9b38c;
             border-radius: 6px;
-            z-index: 20;
         }
         .level-dropdown a.selected {
             background-color: #c19a6b;
             color: white;
             font-weight: bold;
-            z-index: 20;
+        }
+        .create-level-btn {
+            background: linear-gradient(to right, #8b5a2b, #a67c52);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Kalam', cursive;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 
+                0 3px 0 #5a3d2b,
+                0 4px 6px rgba(0,0,0,0.2);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+            position: relative;
+            top: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .create-level-btn::before {
+            /* content: "✨"; */
+            font-size: 16px;
+        }
+        .create-level-btn:hover {
+            background: linear-gradient(to right, #a67c52, #c19a6b);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 5px 0 #5a3d2b,
+                0 6px 8px rgba(0,0,0,0.3);
+        }
+        .create-level-btn:active {
+            top: 2px;
+            box-shadow: 
+                0 1px 0 #5a3d2b,
+                0 2px 4px rgba(0,0,0,0.2);
         }
         .game-board {
             display: grid;
@@ -129,9 +163,8 @@
             z-index: 1;
             justify-content: center;
             align-items: center;
-            /* Remove the left and right padding that was causing the extension */
-            width: fit-content; /* This will make the container only as wide as needed */
-            position: relative; /* Needed for absolute positioning of moving cells */
+            width: fit-content;
+            position: relative;
         }
         .cell {
             width: 40px;
@@ -147,16 +180,13 @@
             box-shadow: 
                 inset 0 1px 0 rgba(255,255,255,0.5),
                 0 2px 3px rgba(0,0,0,0.2);
-            position: relative; /* Default position */
-            /* Add transition for smooth movement */
+            position: relative;
             transition: transform 0.3s ease-in-out;
         }
         .cell.moving {
-            /* Use transform for animation instead of changing grid position */
             z-index: 10;
-            /* The actual transform will be set dynamically */
         }
-        .cell:hover:not(.animating) { /* Don't show hover during animation */
+        .cell:hover:not(.animating) {
             background-color: #d9b38c;
             transform: translateY(-2px);
             box-shadow: 
@@ -173,7 +203,7 @@
                 inset 0 1px 0 rgba(255,255,255,0.3),
                 0 3px 5px rgba(0,0,0,0.3);
         }
-        .cell.arrow:hover:not(.animating) { /* Don't show hover during animation */
+        .cell.arrow:hover:not(.animating) {
             background: linear-gradient(135deg, #d9b38c, #b8956a);
             transform: translateY(-3px) scale(1.05);
             box-shadow: 
@@ -204,7 +234,6 @@
         }
         .cell.nut {
             background-color: #f0d9b5;
-            /* animation: wobble 4s infinite; */
         }
         @keyframes bounce {
             0% { transform: translateY(0); }
@@ -361,6 +390,112 @@
             margin-top: 5px;
             font-style: italic;
         }
+        .level-creator {
+            max-width: 600px;
+            background-color: #e6c9a8;
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            padding: 25px;
+            margin-top: 20px;
+            border: 3px solid #8b5a2b;
+            position: relative;
+            overflow: hidden;
+            display: none;
+        }
+        .level-creator.active {
+            display: block;
+        }
+        .level-creator::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b5a2b' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+            z-index: 0;
+        }
+        .level-creator h2 {
+            color: #5a3d2b;
+            margin-top: 0;
+            text-shadow: 1px 1px 0 #d9b38c;
+            position: relative;
+            z-index: 1;
+        }
+        .level-creator textarea {
+            width: 100%;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #8b5a2b;
+            background-color: #f0d9b5;
+            color: #4a2c17;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 150px;
+            position: relative;
+            z-index: 1;
+        }
+        .level-creator .creator-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+        .level-creator .legend {
+            background-color: rgba(139, 90, 43, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid rgba(139, 90, 43, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        .level-creator .legend h3 {
+            margin-top: 0;
+            color: #5a3d2b;
+        }
+        .level-creator .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .level-creator .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .level-creator .legend-symbol {
+            font-weight: bold;
+            font-size: 18px;
+            width: 30px;
+            text-align: center;
+        }
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+            gap: 15px;                            /* spacing between cells */
+            padding: 20px;
+            width: 500px;
+            justify-content: center;
+        }
+        .level-text:focus {
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -371,210 +506,120 @@
                 <div class="level-info">
                     <div class="level-selector" id="level-selector">
                         Level: <span id="current-level">1</span> / <span id="total-levels">5</span>
-                        <div class="level-dropdown" id="level-dropdown"></div>
                     </div>
                 </div>
-                <!-- <div>Moves: <span id="move-count">0</span></div> -->
+                <button class="create-level-btn" id="create-level-btn">Create new level</button>
+            </div>
+            <div class="level-dropdown" id="level-dropdown"></div>
+            <div class="level-creator" id="level-creator">
+                <h2>Create Custom Level</h2>
+                <p>Enter your level using the following symbols:</p>
+                <div class="legend">
+                    <div class="legend-grid">
+                        <div class="legend-item">
+                            <span class="legend-symbol">.</span>
+                            <span>Empty space</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">S</span>
+                            <span>Squirrel</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">N</span>
+                            <span>Nut</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">↑</span>
+                            <span>Up arrow</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">→</span>
+                            <span>Right arrow</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">↓</span>
+                            <span>Down arrow</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">←</span>
+                            <span>Left arrow</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">↗</span>
+                            <span>Up-right arrow</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">↖</span>
+                            <span>Up-left arrow</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">↘</span>
+                            <span>Down-right arrow</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">↙</span>
+                            <span>Down-left arrow</span>
+                        </div>
+                    </div>
+                </div>
+                <p>Each line must have the same number of characters.</p>
+                <textarea id="level-text" class="level-text" placeholder="Enter your level here..."></textarea>
+                <div class="creator-controls">
+                    <button id="create-btn">Create Level</button>
+                    <button id="cancel-btn">Cancel</button>
+                </div>
+                <div id="creator-error" class="error-message"></div>
             </div>
         </div>
-        <div id="game-board" class="game-board"></div>
+        <div id="game-board" class="game-board">
+        </div>
         <div class="controls">
-            <button id="prev-level">Previous Level</button>
-            <button id="reset-level">Reset Level</button>
-            <button id="next-level">Next Level</button>
+            <div class="grid-container">
+                <!-- Row 1 -->
+                <button id="prev-level">Previous Level</button>
+                <button id="reset-level">Reset Level</button>
+                <button id="next-level">Next Level</button>
+            </div>
         </div>
         <div id="message" class="message"></div>
     </div>
+    
     <div class="instructions">
         <h2>How to Play</h2>
         <ul>
-            <li>Click on arrow cells to push nutes in the arrow's direction</li>
-            <li>Push the nut (🥔) to the squirrel (🐿) to win the level</li>
+            <li>Click on arrow cells to push nuts in the arrow's direction</li>
+            <li>Push the nut (🥜) to the squirrel (🐿️) to win the level</li>
             <li>If you push the nut into a wall or an arrow you lose</li>
             <li>Use the controls to switch between levels or reset the current level</li>
             <li>Click on the level indicator or use left/right arrow keys to quickly navigate between levels</li>
         </ul>
     </div>
-    <div id="squirrel"></div>
     <script>
-        // Game constants
-        const SQUIRREL = "🐿️";
-        const NUT = "🥜";
-        // Direction to arrow symbol mapping
-        const directionToSymbol = {
-            "0,0": "■",
-            "0,1": "↑",
-            "1,1": "↗",
-            "1,0": "→",
-            "1,-1": "↘",
-            "0,-1": "↓",
-            "-1,-1": "↙",
-            "-1,0": "←",
-            "-1,1": "↖"
-        };
-        // Game state
-        let currentLevel = 0;
-        let gameBoard = [];
-        let moveCount = 0;
-        let gameActive = true;
-        let isAnimating = false; // Flag to prevent input during animation
+        let textarea = document.getElementById('level-text');
+        textarea.addEventListener('keydown', (event) => {event.stopPropagation();});
 
-        // Levels data (in a real implementation, this would be loaded from a file)
-        const levels = [
-            // Tutorial 1
-            [
-                [" ", " ", " ", " ", " ", " "],
-                ["→", "→", NUT, " ", " ", " "],
-                [" ", " ", " ", " ", " ", " "]
-            ],
-            // Tutorial 2
-            [
-                [" ", " ", " ", " ", " "],
-                [" ", " ", "↓", " ", " "],
-                [" ", " ", NUT, " ", " "],
-                [" ", "→", " ", " ", " "],
-                [" ", " ", " ", " ", " "]
-            ],
-            // Tutorial 3
-            [
-                [" ", " ", " ", " ", " "],
-                ["→", "↓", " ", " ", " "],
-                [" ", "→", NUT, " ", " "],
-                [" ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " "]
-            ],
-            // Tutorial 4
-            [
-                [" ", " ", " ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", "↓", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " ", " ", " "],
-                [" ", "→", "→", NUT, "→", " ", " ", " ", " "],
-                [" ", " ", " ", " ", "↑", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " ", " ", " "]
-            ],
-            // Start 1
-            [
-                [" ", " ", "↓", " ", " "],
-                [" ", " ", "↙", " ", " "],
-                [" ", "↓", NUT, " ", " "],
-                [" ", " ", " ", "←", " "],
-                [" ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " "]
-            ],
-            // Start 2
-            [
-                [" ", "↓", "↑", " "],
-                ["→", NUT, " ", "←"],
-                ["↑", " ", " ", "↑"],
-                [" ", " ", " ", " "]
-            ],
-            // Start 4 = 2*2
-            [
-                [" ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", "←", "↑"],
-                ["↑", "→", NUT, " ", "↑", "←"],
-                ["→", "↑", " ", " ", " ", " "]
-            ],
-            // Middle 4+1 - rocket
-            [
-                [" ", " ", " ", " "],
-                [" ", "↓", "←", " "],
-                [" ", " ", "↑", "←"],
-                [" ", " ", NUT, "←"],
-                [" ", " ", "↑", " "],
-                [" ", " ", "↑", " "]
-            ],
-            // Middle 6
-            [
-                [" ", " ", " ", "↓", " ", " ", " "],
-                [" ", "→", NUT, "↓", " ", " ", " "],
-                ["→", "→", "↓", "→", " ", " ", " "],
-                [" ", " ", " ", " ", "↑", " ", " "],
-                [" ", " ", " ", " ", " ", " ", "↖"]
-            ],
-            // Middle 7
-            [
-                [" ", " ", " ", " ", " ", " ", " "],
-                ["→", "↓", "→", "↓", " ", " ", " "],
-                [" ", "→", NUT, "↑", "←", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "]
-            ],
-            // Middle 8: far travel
-            [
-                [" ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " "],
-                [" ", " ", NUT, " ", " "],
-                [" ", "→", "↖", " ", " "],
-                ["→", "↑", "↖", " ", " "],
-                [" ", "↗", " ", " ", " "]
-            ],
-            // Middle 9 = 3*3
-            [
-                [" ", " ", " ", " ", " ", " ", " ", " "],
-                [" ", "↓", "→", "↙", " ", " ", " ", " "],
-                [" ", "→", "→", "↓", " ", " ", " ", " "],
-                [" ", "↗", NUT, "↑", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " ", " "]
-            ],
-            // hard 10 = 2*4+2
-            [
-                [" ", " ", " ", " ", " ", " ", " "],
-                [" ", NUT, " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "],
-                [" ", "↘", "↑", "←", "↙", " ", " "],
-                [" ", "↑", "↓", "↑", "↑", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "],
-                [" ", "↑", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " "]
-            ],
-            // Megaminds only
-            [
-                ["↓", " ", "↓", " ", " ", " ", " ", " "],
-                ["→", "→", "→", "↙", " ", " ", " ", " "],
-                [" ", "↓", "↘", "←", " ", " ", " ", " "],
-                [" ", " ", "↗", "■", " ", " ", " ", " "],
-                [" ", " ", " ", NUT, " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " ", " "]
-            ]
-        ];
-        // Place SQUIRREL at the target coordinates (1-based index)
-        levels[0][1][4] = SQUIRREL; // Tutorial 1
-        levels[1][3][3] = SQUIRREL; // Tutorial 2
-        levels[2][3][3] = SQUIRREL; // Tutorial 3
-        levels[3][3][7] = SQUIRREL; // Tutorial 4
-        levels[4][5][0] = SQUIRREL; // Start 1
-        levels[5][2][2] = SQUIRREL; // Start 2
-        levels[6][0][2] = SQUIRREL; // Start 4
-        levels[7][0][1] = SQUIRREL; // Middle 4+1
-        levels[8][4][5] = SQUIRREL; // Middle 6
-        levels[9][3][6] = SQUIRREL; // Middle 7
-        levels[10][0][0] = SQUIRREL; // Middle 8
-        levels[11][3][6] = SQUIRREL; // Middle 9
-        levels[12][0][1] = SQUIRREL; // hard 10
-        levels[13][4][7] = SQUIRREL; // Megaminds only
-        // Level names
-        const levelNames = [
-            "Tutorial 1",
-            "Tutorial 2",
-            "Tutorial 3",
-            "Tutorial 4",
-            "Start 1",
-            "Start 2",
-            "Start 4",
-            "Middle 4+1 - rocket",
-            "Middle 6",
-            "Middle 7",
-            "Middle 8: far travel",
-            "Middle 9 = 3*3",
-            "hard 10 = 2*4+2",
-            "Megaminds only"
-        ];
+        // Auto-resize textarea functionality
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = textarea.scrollHeight;
+            textarea.style.height = newHeight + 'px';
+        }
+
+        // Update textarea from JavaScript
+        function updateTextarea(textarea, newValue) {
+            textarea.value = newValue;
+            autoResize(textarea);
+        }
+
+        // Initialize
+        autoResize(textarea);
+
+        textarea.addEventListener('input', () => autoResize(textarea));
+        textarea.addEventListener('paste', () => setTimeout(() => autoResize(textarea), 0));
+        textarea.addEventListener('cut', () => setTimeout(() => autoResize(textarea), 0));
+        textarea.addEventListener('drop', () => setTimeout(() => autoResize(textarea), 0));
+    </script>
+    <script>
         // Cell class
         class Cell {
             constructor(symbol) {
@@ -597,6 +642,7 @@
                 }
             }
         }
+        
         // Initialize the game
         function initGame() {
             document.getElementById('total-levels').textContent = levels.length;
@@ -604,13 +650,27 @@
             loadLevel(currentLevel);
             setupEventListeners();
         }
+        
+        // Get all levels (base + custom)
+        function getAllLevels() {
+            return [...levelTexts, ...customLevelsText];
+        }
+        
+        // Get all level names (base + custom)
+        function getAllLevelNames() {
+            return [...levelNames, ...customLevelsText.map((_, index) => `Custom ${index + 1}`)];
+        }
+        
         // Populate the level dropdown
         function populateLevelDropdown() {
             const dropdown = document.getElementById('level-dropdown');
             dropdown.innerHTML = '';
-            for (let i = 0; i < levels.length; i++) {
+            const allLevels = getAllLevels().map((lines, index) => (textToLevel(lines)));
+            const allLevelNames = getAllLevelNames();
+            
+            for (let i = 0; i < allLevels.length; i++) {
                 const levelLink = document.createElement('a');
-                levelLink.textContent = `${i + 1}. ${levelNames[i]}`;
+                levelLink.textContent = `${i + 1}. ${allLevelNames[i]}`;
                 levelLink.dataset.level = i;
                 if (i === currentLevel) {
                     levelLink.classList.add('selected');
@@ -624,6 +684,7 @@
                 dropdown.appendChild(levelLink);
             }
         }
+        
         // Toggle level dropdown visibility
         function toggleLevelDropdown(show) {
             const dropdown = document.getElementById('level-dropdown');
@@ -634,31 +695,53 @@
                 dropdown.style.display = show ? 'block' : 'none';
             }
         }
+
+        // Set levels-text initial text
+        function setInitialTextInLevelCreation(levelIndex) {
+            const level = getAllLevels()[levelIndex];
+            let levelString = "";
+            for (const row of level) {
+                for (const elem of row) {
+                    levelString += elem;
+                }
+                levelString += "\n"
+            }
+            updateTextarea(textarea, levelString);
+        }
+       
         // Load a specific level
         function loadLevel(levelIndex) {
-            if (levelIndex < 0 || levelIndex >= levels.length) return;
+            setInitialTextInLevelCreation(levelIndex);
+            const allLevels = getAllLevels();
+            if (levelIndex < 0 || levelIndex >= allLevels.length) return;
+            
             currentLevel = levelIndex;
             gameActive = true;
             moveCount = 0;
             updateMoveCount();
             updateLevelInfo();
             hideMessage();
+            
             // Create game board from level data
-            const levelData = levels[levelIndex];
+
+            const levelData = allLevels[levelIndex];
             gameBoard = [];
+            
             // Reverse the level data to match the original game's orientation
             for (let y = levelData.length - 1; y >= 0; y--) {
                 const row = [];
                 for (let x = 0; x < levelData[y].length; x++) {
                     const symbol = levelData[y][x];
-                    row.push(new Cell(symbol));
+                    row.push(new Cell(charToSymbol[symbol]));
                 }
                 gameBoard.push(row);
             }
+            
             renderBoard();
             updateDropdownSelection();
             isAnimating = false;
         }
+        
         // Update dropdown selection
         function updateDropdownSelection() {
             const dropdownLinks = document.querySelectorAll('#level-dropdown a');
@@ -670,12 +753,15 @@
                 }
             });
         }
+        
         // Render the game board
         function renderBoard() {
             const boardElement = document.getElementById('game-board');
             boardElement.innerHTML = '';
+            
             // Set grid dimensions
             boardElement.style.gridTemplateColumns = `repeat(${gameBoard[0].length}, 40px)`;
+            
             // Create cells
             for (let y = gameBoard.length - 1; y >= 0; y--) {
                 for (let x = 0; x < gameBoard[y].length; x++) {
@@ -684,6 +770,7 @@
                     cellElement.textContent = gameBoard[y][x].symbol;
                     cellElement.dataset.x = x;
                     cellElement.dataset.y = y;
+                    
                     // Add special classes for different cell types
                     if (gameBoard[y][x].isPusherArrow) {
                         cellElement.classList.add('arrow');
@@ -692,25 +779,28 @@
                     } else if (gameBoard[y][x].isObjectToPush) {
                         cellElement.classList.add('nut');
                     }
+                    
                     // Add click event for pusher arrows
                     if (gameBoard[y][x].isPusherArrow && gameActive) {
                         cellElement.addEventListener('click', () => handleMove(x, y));
                     }
+                    
                     boardElement.appendChild(cellElement);
                 }
             }
         }
+        
         // Handle a move
         function handleMove(x, y) {
             if (!gameActive || isAnimating) return; // Ignore if game is inactive or animating
-
+            
             const cell = gameBoard[y][x];
             if (!cell.isPusherArrow) return;
-
+            
             isAnimating = true; // Set animation flag
             moveCount++;
             updateMoveCount();
-
+            
             // Add animation to the clicked arrow
             const arrowCell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
             if (arrowCell) {
@@ -720,20 +810,20 @@
                     arrowCell.classList.remove('active');
                 }, 500); // Match CSS animation duration
             }
-
+            
             const dx = cell.pushX;
             const dy = cell.pushY;
             let insertionCell = new Cell(" ");
             let xToInsert = x + dx;
             let yToInsert = y + dy;
-
+            
             // Store animation data: {startX, startY, endX, endY, cellElement}
             const animationData = [];
-
+            
             // Calculate final positions and collect animation data
             while (isInBounds(xToInsert, yToInsert)) {
                 const targetCell = gameBoard[yToInsert][xToInsert];
-
+                
                 // Check win/lose conditions
                 if (targetCell.isTarget) {
                     // Add animation data for the last cell if it's the nut
@@ -751,8 +841,6 @@
                         // Animate, then win
                         animateMovement(animationData, () => {
                              // Update board state after animation
-                            //  gameBoard[yToInsert][xToInsert] = insertionCell; // Place nut at squirrel
-                            //  gameBoard[yToInsert - dy][xToInsert - dx] = insertionCell; // Clear old nut position
                              renderBoard(); // Re-render to show final state
                              setTimeout(() => endGame(true), 100); // Delay win slightly after animation
                         });
@@ -778,6 +866,7 @@
                     } 
                     return; // Exit function after win/lose animation starts
                 } 
+                
                 // Check for collision
                 if (insertionCell.isBreakable && !targetCell.isEmpty) {
                     // Add animation data for the cell that hits the obstacle
@@ -794,14 +883,12 @@
                     // Animate, then lose
                     animateMovement(animationData, () => {
                         // Update board state after animation (optional, as game ends)
-                        // gameBoard[yToInsert][xToInsert] remains unchanged
-                        // gameBoard[yToInsert - dy][xToInsert - dx] = insertionCell; // Place nut at collision point
                         renderBoard(); // Re-render if needed
                         setTimeout(() => endGame(false), 100); // Delay lose slightly after animation
                     });
                     return; // Exit function after collision animation starts
                 }
-
+                
                 // Add animation data for the moving cell
                 if (!insertionCell.isEmpty) {
                     const movingCellElement = document.querySelector(`.cell[data-x="${xToInsert - dx}"][data-y="${yToInsert - dy}"]`);
@@ -815,27 +902,27 @@
                         });
                     }
                 }
-
+                
                 // Swap cells in temporary state for next iteration calculation
-                const tempCell = gameBoard[yToInsert][xToInsert]    ;
+                const tempCell = gameBoard[yToInsert][xToInsert];
                 gameBoard[yToInsert][xToInsert] = insertionCell;
                 insertionCell = tempCell;
-
+                
                 // Stop if we've inserted an empty cell
                 if (insertionCell.isEmpty) break;
-
+                
                 // Move to next position
                 xToInsert += dx;
                 yToInsert += dy;
             }
-
+            
             // If we exited the loop normally (no win/lose/collision), animate the movement
             animateMovement(animationData, () => {
                 // Update the actual game board state after animation completes
                 let tempX = x + dx;
                 let tempY = y + dy;
                 let tempInsertionCell = new Cell(" ");
-
+                
                 while (isInBounds(tempX, tempY)) {
                     const targetCell = gameBoard[tempY][tempX];
                     gameBoard[tempY][tempX] = tempInsertionCell;
@@ -844,11 +931,12 @@
                     tempX += dx;
                     tempY += dy;
                 }
+                
                 renderBoard(); // Re-render the board with the updated state
                 isAnimating = false; // Allow new moves
             });
         }
-
+        
         // Animate the movement of cells
         function animateMovement(animationData, onComplete) {
             if (animationData.length === 0) {
@@ -856,21 +944,22 @@
                 if (onComplete) onComplete();
                 return;
             }
-
+            
             const animationPromises = [];
-
+            
             animationData.forEach(data => {
                 const { startX, startY, endX, endY, cellElement } = data;
+                
                 // Calculate the translation needed (in grid units, then convert to pixels)
                 const deltaX = endX - startX;
                 const deltaY = endY - startY;
                 const translateX = deltaX * 43; // 40px cell width + 3px gap
                 const translateY = (startY - endY) * 43; // Invert Y because grid Y increases downwards
-
+                
                 // Apply the transform
                 cellElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
                 cellElement.classList.add('moving'); // Add moving class for potential styling
-
+                
                 // Create a promise that resolves when the transition ends
                 const promise = new Promise(resolve => {
                     const listener = () => {
@@ -881,20 +970,22 @@
                     };
                     cellElement.addEventListener('transitionend', listener);
                 });
+                
                 animationPromises.push(promise);
             });
-
+            
             // Wait for all animations to complete
             Promise.all(animationPromises).then(() => {
                 isAnimating = false; // Animation finished, allow new moves
                 if (onComplete) onComplete();
             });
         }
-
+        
         // Check if coordinates are within the game board
         function isInBounds(x, y) {
             return y >= 0 && y < gameBoard.length && x >= 0 && x < gameBoard[0].length;
         }
+        
         // End the game with win/lose message
         function endGame(isWin) {
             gameActive = false;
@@ -912,20 +1003,26 @@
                 messageElement.classList.add('show');
             }, 10);
         }
+        
         // Update move count display
         function updateMoveCount() {
             // document.getElementById('move-count').textContent = moveCount;
         }
+        
         // Update level info display
         function updateLevelInfo() {
             document.getElementById('current-level').textContent = currentLevel + 1;
+            const allLevels = getAllLevels();
+            document.getElementById('total-levels').textContent = allLevels.length;
         }
+        
         // Hide message
         function hideMessage() {
             const messageElement = document.getElementById('message');
             messageElement.classList.remove('show');
             messageElement.style.display = 'none';
         }
+        
         // Setup event listeners
         function setupEventListeners() {
             // Level selector click
@@ -933,37 +1030,343 @@
                 e.stopPropagation();
                 toggleLevelDropdown();
             });
+            
             // Close dropdown when clicking outside
             document.addEventListener('click', () => {
                 toggleLevelDropdown(false);
             });
+            
             // Prevent dropdown from closing when clicking inside it
             document.getElementById('level-dropdown').addEventListener('click', (e) => {
                 e.stopPropagation();
             });
+            
             // Button controls
             document.getElementById('prev-level').addEventListener('click', () => {
                 if (currentLevel > 0) {
                     loadLevel(currentLevel - 1);
                 }
             });
+            
             document.getElementById('next-level').addEventListener('click', () => {
-                if (currentLevel < levels.length - 1) {
+                const allLevels = getAllLevels();
+                if (currentLevel < allLevels.length - 1) {
                     loadLevel(currentLevel + 1);
                 }
             });
+            
             document.getElementById('reset-level').addEventListener('click', () => {
                 loadLevel(currentLevel);
             });
+            
+            // Create level button
+            document.getElementById('create-level-btn').addEventListener('click', () => {
+                document.getElementById('level-creator').classList.toggle('active');
+                document.getElementById('level-text').focus();
+            });
+            
+            // Create level in creator
+            document.getElementById('create-btn').addEventListener('click', createCustomLevel);
+            
+            // Cancel level creation
+            document.getElementById('cancel-btn').addEventListener('click', () => {
+                document.getElementById('level-creator').classList.remove('active');
+                hideCreatorError();
+            });
+            
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft' && currentLevel > 0) {
                     loadLevel(currentLevel - 1);
-                } else if (e.key === 'ArrowRight' && currentLevel < levels.length - 1) {
-                    loadLevel(currentLevel + 1);
+                } else if (e.key === 'ArrowRight') {
+                    const allLevels = getAllLevels();
+                    if (currentLevel < allLevels.length - 1) {
+                        loadLevel(currentLevel + 1);
+                    }
                 }
             });
         }
+        
+        function textToLevel(lines) {
+            if (lines.length === 0) {
+                throw new Error("Please enter at least one line.");
+            }
+            
+            // Validate: all lines same length
+            const lineLength = lines[0].length;
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].length !== lineLength) {
+                    throw new Error("All lines must have the same length.");
+                }
+            }
+
+            // Map each character to symbol
+            const levelData = [];
+            let squirrelCount = 0;
+            let nutCount = 0;
+            
+            for (let y = 0; y < lines.length; y++) {
+                const row = [];
+                for (let x = 0; x < lines[y].length; x++) {
+                    const char = lines[y][x];
+                    if (char in charToSymbol) {
+                        const symbol = charToSymbol[char];
+                        row.push(symbol);
+                        if (symbol === SQUIRREL) squirrelCount++;
+                        if (symbol === NUT) nutCount++;
+                    } else {
+                        throw new Error(`Invalid character '${char}' at row ${y+1}, column ${x+1}.`);
+                        return;
+                    }
+                }
+                levelData.push(row);
+            }
+            
+            // Validate: at least one squirrel and one nut
+            if (squirrelCount === 0) {
+                throw new Error("The level must have at least one squirrel (S).");
+            }
+            if (nutCount === 0) {
+                throw new Error("The level must have at least one nut (N).");
+            }
+            return levelData;
+        }
+
+        // Create custom level from text input
+        function createCustomLevel() {
+            const text = document.getElementById('level-text').value.trim();
+            if (!text) {
+                showCreatorError("Please enter a level design.");
+                return;
+            }
+            
+            const lines = text.split('\n').filter(line => line.length > 0);
+            
+            try {
+                levelData = textToLevel(lines);
+            } catch (error) {
+                showCreatorError(error.message);
+                return;
+            }
+
+            // Add the level to customLevels
+            customLevelsText.push(lines);
+            
+            // Update the level dropdown
+            populateLevelDropdown();
+            updateLevelInfo();
+            
+            // Load the new level (which is the last one)
+            const allLevels = getAllLevels();
+            loadLevel(allLevels.length - 1);
+            
+            // Close the creator
+            document.getElementById('level-creator').classList.remove('active');
+            hideCreatorError();
+        }
+        
+        // Show creator error message
+        function showCreatorError(message) {
+            const errorElement = document.getElementById('creator-error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // Hide creator error message
+        function hideCreatorError() {
+            const errorElement = document.getElementById('creator-error');
+            errorElement.style.display = 'none';
+        }
+
+        // Game constants
+        const SQUIRREL = "🐿️";
+        const NUT = "🥜";
+        // Direction to arrow symbol mapping
+        const directionToSymbol = {
+            "0,0": "■",
+            "0,1": "↑",
+            "1,1": "↗",
+            "1,0": "→",
+            "1,-1": "↘",
+            "0,-1": "↓",
+            "-1,-1": "↙",
+            "-1,0": "←",
+            "-1,1": "↖"
+        };
+        
+        // Character to symbol mapping for level creation
+        const charToSymbol = {
+            '.': ' ',
+            'S': SQUIRREL,
+            'N': NUT,
+            '↑': '↑',
+            '→': '→',
+            '↓': '↓',
+            '←': '←',
+            '↗': '↗',
+            '↖': '↖',
+            '↘': '↘',
+            '↙': '↙',
+            '■': '■',
+        };
+        
+        // Game state
+        let currentLevel = 0;
+        let gameBoard = [];
+        let moveCount = 0;
+        let gameActive = true;
+        let isAnimating = false;
+        let customLevelsText = [];
+        
+        const levelTexts = [
+            [
+                "......",
+                "→→N.S.",
+                "......"
+            ],
+            [
+                ".....",
+                "..↓..",
+                "..N..",
+                ".→.S.",
+                "....."
+            ],
+            [
+                ".....",
+                "→↓...",
+                ".→N..",
+                "...S.",
+                "....."
+            ],
+            [
+                ".........",
+                "....↓....",
+                ".........",
+                ".→→N→..S.",
+                "....↑....",
+                "........."
+            ],
+            [
+                "..↓..",
+                "..↙..",
+                ".↓N..",
+                "...←.",
+                ".....",
+                "S...."
+            ],
+            [
+                ".↓↑.",
+                "→N.←",
+                "↑.S↑",
+                "...."
+            ],
+            [
+                "..S...",
+                "....←↑",
+                "↑→N.↑←",
+                "→↑...."
+            ],
+            [
+                ".S..",
+                ".↓←.",
+                "..↑←",
+                "..N←",
+                "..↑.",
+                "..↑."
+            ],
+            [
+                "...↓...",
+                ".→N↓...",
+                "→→↓→...",
+                "....↑..",
+                ".....S↖"
+            ],
+            [
+                ".......",
+                "→↓→↓...",
+                ".→N↑←..",
+                "......S",
+                "......."
+            ],
+            [
+                "S....",
+                ".....",
+                ".....",
+                ".....",
+                "..N..",
+                ".→↖..",
+                "→↑↖..",
+                ".↗..."
+            ],
+            [
+                "........",
+                ".↓→↙....",
+                ".→→↓....",
+                ".↗N↑..S.",
+                "........"
+            ],
+            [
+                ".S.....",
+                ".N.....",
+                ".......",
+                ".......",
+                ".......",
+                ".......",
+                ".↘↑←↙..",
+                ".↑↓↑↑..",
+                ".......",
+                ".↑.....",
+                "......."
+            ],
+            [
+                "↓.↓.....",
+                "→→→↙....",
+                ".↓↘←....",
+                "..↗■....",
+                "...N...S",
+                "........"
+            ]
+        ]
+        const levels = []
+        for (const lines of levelTexts) {
+            levels.push(textToLevel(lines))
+        }
+        // Place SQUIRREL at the target coordinates (1-based index)
+        levels[0][1][4] = SQUIRREL; // Tutorial 1
+        levels[1][3][3] = SQUIRREL; // Tutorial 2
+        levels[2][3][3] = SQUIRREL; // Tutorial 3
+        levels[3][3][7] = SQUIRREL; // Tutorial 4
+        levels[4][5][0] = SQUIRREL; // Start 1
+        levels[5][2][2] = SQUIRREL; // Start 2
+        levels[6][0][2] = SQUIRREL; // Start 4
+        levels[7][0][1] = SQUIRREL; // Middle 4+1
+        levels[8][4][5] = SQUIRREL; // Middle 6
+        levels[9][3][6] = SQUIRREL; // Middle 7
+        levels[10][0][0] = SQUIRREL; // Middle 8
+        levels[11][3][6] = SQUIRREL; // Middle 9
+        levels[12][0][1] = SQUIRREL; // hard 10
+        levels[13][4][7] = SQUIRREL; // Megaminds only
+
+        setInitialTextInLevelCreation(13);
+
+        // Level names
+        const levelNames = [
+            "Tutorial 1",
+            "Tutorial 2",
+            "Tutorial 3",
+            "Tutorial 4",
+            "Start 1",
+            "Start 2",
+            "Start 4",
+            "Middle 4+1 - rocket",
+            "Middle 6",
+            "Middle 7",
+            "Middle 8: far travel",
+            "Middle 9 = 3*3",
+            "hard 10 = 2*4+2",
+            "Megaminds only"
+        ];
+
         // Start the game when the page loads
         window.addEventListener('DOMContentLoaded', initGame);
     </script>
