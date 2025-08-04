@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Squirrel nut Pusher</title>
+    <title>Delivery Game</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
         body {
@@ -14,8 +14,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
             color: #4a2c17;
+            margin: 0;
+            box-sizing: border-box;
         }
         .game-container {
             background-color: #e6c9a8;
@@ -23,11 +25,14 @@
             box-shadow: 
                 0 8px 16px rgba(0,0,0,0.2),
                 inset 0 1px 0 rgba(255,255,255,0.3);
-            padding: 25px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
             border: 3px solid #8b5a2b;
             position: relative;
             overflow: hidden;
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
         }
         .game-container::before {
             content: "";
@@ -42,12 +47,12 @@
         }
         .game-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             position: relative;
             z-index: 1;
         }
         .game-title {
-            font-size: 2.5em;
+            font-size: 2em;
             margin-top: 2px;
             margin-bottom: 10px;
             color: #5a3d2b;
@@ -59,11 +64,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            font-size: 1.2em;
+            font-size: 1.1em;
             background-color: rgba(139, 90, 43, 0.1);
             padding: 8px 15px;
             border-radius: 10px;
             border: 1px solid rgba(139, 90, 43, 0.3);
+            flex-wrap: wrap;
         }
         .level-info {
             display: flex;
@@ -82,7 +88,6 @@
         .level-dropdown {
             display: none;
             background-color: #e6c9a8;
-            min-width: 200px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             border-radius: 8px;
             border: 2px solid #8b5a2b;
@@ -165,6 +170,8 @@
             align-items: center;
             width: fit-content;
             position: relative;
+            max-width: 100%;
+            overflow-x: auto;
         }
         .cell {
             width: 40px;
@@ -247,7 +254,7 @@
         .controls {
             display: flex;
             gap: 15px;
-            margin-top: 25px;
+            margin-top: 20px;
             justify-content: center;
             position: relative;
             z-index: 1;
@@ -293,13 +300,13 @@
                 0 3px 5px rgba(0,0,0,0.2);
         }
         .message {
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 15px;
             border-radius: 10px;
             text-align: center;
             font-weight: bold;
             display: none;
-            font-size: 1.2em;
+            font-size: 1.1em;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             position: relative;
             z-index: 1;
@@ -351,11 +358,13 @@
             box-shadow: 
                 0 8px 16px rgba(0,0,0,0.2),
                 inset 0 1px 0 rgba(255,255,255,0.3);
-            padding: 25px;
-            margin-top: 20px;
+            padding: 20px;
+            margin-top: 15px;
             border: 3px solid #8b5a2b;
             position: relative;
             overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
         }
         .instructions::before {
             content: "";
@@ -374,6 +383,7 @@
             text-shadow: 1px 1px 0 #d9b38c;
             position: relative;
             z-index: 1;
+            font-size: 1.5em;
         }
         .instructions ul {
             padding-left: 20px;
@@ -383,6 +393,7 @@
         .instructions li {
             margin-bottom: 10px;
             line-height: 1.4;
+            font-size: 1em;
         }
         .keyboard-hint {
             font-size: 0.9em;
@@ -397,12 +408,14 @@
             box-shadow: 
                 0 8px 16px rgba(0,0,0,0.2),
                 inset 0 1px 0 rgba(255,255,255,0.3);
-            padding: 25px;
-            margin-top: 20px;
+            padding: 20px;
+            margin-top: 15px;
             border: 3px solid #8b5a2b;
             position: relative;
             overflow: hidden;
             display: none;
+            width: 100%;
+            box-sizing: border-box;
         }
         .level-creator.active {
             display: block;
@@ -424,6 +437,7 @@
             text-shadow: 1px 1px 0 #d9b38c;
             position: relative;
             z-index: 1;
+            font-size: 1.5em;
         }
         .level-creator textarea {
             width: 100%;
@@ -438,6 +452,7 @@
             min-height: 150px;
             position: relative;
             z-index: 1;
+            box-sizing: border-box;
         }
         .level-creator .creator-controls {
             display: flex;
@@ -446,6 +461,7 @@
             justify-content: center;
             position: relative;
             z-index: 1;
+            flex-wrap: wrap;
         }
         .level-creator .legend {
             background-color: rgba(139, 90, 43, 0.1);
@@ -459,6 +475,7 @@
         .level-creator .legend h3 {
             margin-top: 0;
             color: #5a3d2b;
+            font-size: 1.2em;
         }
         .level-creator .legend-grid {
             display: grid;
@@ -469,6 +486,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            font-size: 0.9em;
         }
         .level-creator .legend-symbol {
             font-weight: bold;
@@ -488,27 +506,74 @@
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
-            gap: 15px;                            /* spacing between cells */
-            padding: 20px;
-            width: 500px;
+            gap: 10px;                            /* spacing between cells */
+            padding: 10px;
+            width: 100%;
+            max-width: 500px;
             justify-content: center;
+            box-sizing: border-box;
         }
         .level-text:focus {
             outline: none;
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 100px) {
+            .game-title {
+                font-size: 1.8em;
+            }
+            
+            /* .cell {
+                width: 30px;
+                height: 30px;
+                font-size: 20px;
+            } */
+            
+            .game-board {
+                gap: 2px;
+                padding: 5px;
+            }
+            
+            .controls button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .instructions h2, .level-creator h2 {
+                font-size: 1.3em;
+            }
+            
+            .instructions li, .level-creator .legend-item {
+                font-size: 0.9em;
+            }
+            
+            .grid-container {
+                grid-template-columns: 1fr;
+                max-width: 100%;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .level-creator .legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="game-header">
-            <h1 class="game-title">Nut to squirrel delivery</h1>
+            <h1 class="game-title">Delivery puzzle</h1>
             <div class="game-info">
                 <div class="level-info">
                     <div class="level-selector" id="level-selector">
                         Level: <span id="current-level">1</span> / <span id="total-levels">5</span>
                     </div>
                 </div>
-                <button class="create-level-btn" id="create-level-btn">Create new level</button>
+                <button class="create-level-btn" id="create-level-btn">Create Level</button>
             </div>
             <div class="level-dropdown" id="level-dropdown"></div>
             <div class="level-creator" id="level-creator">
@@ -594,6 +659,7 @@
             <li>Click on the level indicator or use left/right arrow keys to quickly navigate between levels</li>
         </ul>
     </div>
+
     <script>
         let textarea = document.getElementById('level-text');
         textarea.addEventListener('keydown', (event) => {event.stopPropagation();});
